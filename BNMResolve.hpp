@@ -1,12 +1,4 @@
-#include "../BNM-Android/include/BNM/Loading.hpp"
-#include "../BNM-Android/include/BNM/UserSettings/GlobalSettings.hpp"
-#include "../BNM-Android/include/BNM/Class.hpp"
-#include "../BNM-Android/include/BNM/Field.hpp"
-#include "../BNM-Android/include/BNM/Method.hpp"
-#include "../BNM-Android/include/BNM/Property.hpp"
-#include "../BNM-Android/include/BNM/Defaults.hpp"
-#include "../BNM-Android/include/BNM/Operators.hpp"
-#include "../BNM-Android/include/BNM/BasicMonoStructures.hpp"
+#include "../Utils/includes.h"
 
 using namespace BNM;
 using namespace Structures::Unity;
@@ -38,6 +30,14 @@ enum RenderMode
     ScreenSpaceOverlay,
     ScreenSpaceCamera,
     WorldSpace
+};
+enum class PrimitiveType : int {
+    Sphere,
+    Capsule,
+    Cylinder,
+    Cube,
+    Plane,
+    Quad
 };
 enum TextAnchor
 {
@@ -85,6 +85,14 @@ struct GameObject : Object{
     }
     static Class GetClass(){
         return Class("UnityEngine", "GameObject");
+    }
+    static void Destroy(Object* obj){
+        Method<void> Destroy = Class("UnityEngine", "Object").GetMethod("Destroy");
+        Destroy(obj);
+    }
+    static GameObject *CreatePrimitive(PrimitiveType primitiveType){
+        auto CreatePrimitive = (GameObject*(*)(PrimitiveType))GetExternMethod("UnityEngine.GameObject::CreatePrimitive");
+        return CreatePrimitive(primitiveType);
     }
 
     Array<Component*>* GetComponentsInChildren(MonoType* type){
