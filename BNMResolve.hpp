@@ -1,4 +1,12 @@
-#include "../Utils/includes.h"
+#include "../BNM-Android/include/BNM/Loading.hpp"
+#include "../BNM-Android/include/BNM/UserSettings/GlobalSettings.hpp"
+#include "../BNM-Android/include/BNM/Class.hpp"
+#include "../BNM-Android/include/BNM/Field.hpp"
+#include "../BNM-Android/include/BNM/Method.hpp"
+#include "../BNM-Android/include/BNM/Property.hpp"
+#include "../BNM-Android/include/BNM/Defaults.hpp"
+#include "../BNM-Android/include/BNM/Operators.hpp"
+#include "../BNM-Android/include/BNM/BasicMonoStructures.hpp"
 
 using namespace BNM;
 using namespace Structures::Unity;
