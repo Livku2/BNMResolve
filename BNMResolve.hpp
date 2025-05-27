@@ -23,6 +23,9 @@ struct Graphic;
 struct MaskableGraphic;
 struct Text;
 struct Font;
+struct LineRenderer;
+struct Rigidbody;
+struct Time;
 
 //enums
 enum RenderMode
@@ -77,6 +80,16 @@ struct Component : Object{
     void SetTag(std::string tag){
         Method<void> set_tag = GetClass().GetMethod("set_tag");
         set_tag[this](CreateMonoString(tag));
+    }
+
+    std::string GetName(){
+        Method<String*> get_name = GetClass().GetMethod("get_name");
+        auto tag = get_name[this]();
+        return tag->str();
+    }
+    void SetName(std::string tag){
+        Method<void> set_name = GetClass().GetMethod("set_name");
+        set_name[this](CreateMonoString(tag));
     }
 };
 struct GameObject : Object{
@@ -139,6 +152,16 @@ struct GameObject : Object{
     bool GetActiveSelf(){
         auto get_activeSelf = (bool (*)(void*))GetExternMethod("UnityEngine.GameObject::get_activeSelf");
         return get_activeSelf(this);
+    }
+
+    std::string GetName(){
+        Method<String*> get_name = GetClass().GetMethod("get_name");
+        auto tag = get_name[this]();
+        return tag->str();
+    }
+    void SetName(std::string tag){
+        Method<void> set_name = GetClass().GetMethod("set_name");
+        set_name[this](CreateMonoString(tag));
     }
 };
 struct Transform : Component{
@@ -308,7 +331,7 @@ struct Shader : Object{
     }
     static Shader* Find(std::string shaderName){
         Method<Shader*> Find = GetClass().GetMethod("Find");
-        Find(CreateMonoString(shaderName));
+        return Find(CreateMonoString(shaderName));
     }
 
 };
@@ -326,6 +349,14 @@ struct Material : Object{
     void SetShader(Shader* shader){
         auto setShader = (void(*)(void*, Shader*)) GetExternMethod("UnityEngine.Material::set_shader");
         setShader(this, shader);
+    }
+    Color GetColor(){
+        Method<Color> get_color = GetClass().GetMethod("get_color");
+        return get_color[this]();
+    }
+    void SetColor(Color color){
+        Method<void> set_color = GetClass().GetMethod("set_color");
+        set_color[this](color);
     }
 };
 struct Renderer : Component{
@@ -426,4 +457,104 @@ struct Text : MaskableGraphic{
         Method<void> set_text = GetClass().GetMethod("set_text");
         set_text[this](CreateMonoString(text));
     }
+};
+struct LineRenderer : Renderer{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "LineRenderer").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "LineRenderer");
+    }
+
+    void SetUseWorldScape(bool val){
+        auto set_useWorldSpace = (void (*)(void*, bool))GetExternMethod("UnityEngine.LineRenderer::set_useWorldSpace");
+        set_useWorldSpace(this, val);
+    }
+    bool GetUseWorldScape(){
+        auto get_useWorldSpace = (bool (*)(void*))GetExternMethod("UnityEngine.LineRenderer::get_useWorldSpace");
+        return get_useWorldSpace(this);
+    }
+    void SetStartWidth(float val){
+        auto set_startWidth = (void (*)(void*, float))GetExternMethod("UnityEngine.LineRenderer::set_startWidth");
+        set_startWidth(this, val);
+    }
+    float GetStartWidth(){
+        auto get_startWidth = (float (*)(void*))GetExternMethod("UnityEngine.LineRenderer::get_startWidth");
+        return get_startWidth(this);
+    }
+    void SetEndWidth(float val){
+        auto set_endWidth = (void (*)(void*, float))GetExternMethod("UnityEngine.LineRenderer::set_endWidth");
+        set_endWidth(this, val);
+    }
+    void SetStartColor(Color val){
+        Method<void> set_startColor = GetClass().GetMethod("set_startColor");
+        set_startColor[this](val);
+    }
+    Color GetStartColor(){
+        Method<Color> get_startColor = GetClass().GetMethod("get_startColor");
+        get_startColor[this]();
+    }
+    void SetEndColor(Color val){
+        Method<void> set_startColor = GetClass().GetMethod("set_startColor");
+        set_startColor[this](val);
+    }
+    Color GetEndColor(){
+        Method<Color> get_endColor = GetClass().GetMethod("get_endColor");
+        get_endColor[this]();
+    }
+    void SetPosition(int index, Vector3 position){
+        Method<void> SetPosition = GetClass().GetMethod("SetPosition");
+        SetPosition[this](index, position);
+    }
+};
+
+struct Rigidbody : Component{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "Rigidbody").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "Rigidbody");
+    }
+    void SetUseGravity(bool useGravity){
+        auto set_useGravity = (void(*)(void*, bool))GetExternMethod("UnityEngine.Rigidbody::set_useGravity");
+        set_useGravity(this, useGravity);
+    }
+    bool GetUseGravity(){
+        auto get_useGravity = (bool(*)(void*))GetExternMethod("UnityEngine.Rigidbody::get_useGravity");
+        return get_useGravity(this);
+    }
+    void SetVelocity(Vector3 velocity){
+        Method<void> set_velocity = GetClass().GetMethod("set_velocity");
+        set_velocity[this](velocity);
+    }
+    Vector3 GetVelocity(){
+        Method<Vector3> get_velocity = GetClass().GetMethod("get_velocity");
+        return get_velocity[this]();
+    }
+
+};
+struct Time{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "Time").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "Time");
+    }
+    static float GetDeltaTime(){
+        auto get_deltaTime = (float(*)())GetExternMethod("UnityEngine.Time::get_deltaTime");
+        return get_deltaTime();
+    }
+    static float GetTimeScale(){
+        auto get_timeScale = (float(*)())GetExternMethod("UnityEngine.Time::get_timeScale");
+        return get_timeScale();
+    }
+    static void SetTimeScale(float scale){
+        auto set_timeScale = (void(*)(float))GetExternMethod("UnityEngine.Time::set_timeScale");
+        set_timeScale(scale);
+    }
+    static int GetFrameCount(){
+        auto get_frameCount = (int(*)())GetExternMethod("UnityEngine.Time::get_frameCount");
+        return get_frameCount();
+    }
+
 };
