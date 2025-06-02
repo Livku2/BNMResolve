@@ -34,7 +34,7 @@ enum RenderMode
     ScreenSpaceCamera,
     WorldSpace
 };
-enum class PrimitiveType : int {
+enum PrimitiveType{
     Sphere,
     Capsule,
     Cylinder,
