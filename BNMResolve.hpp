@@ -120,6 +120,10 @@ struct GameObject : Object{
         Method<Array<Component*>*> GetComponents = GetClass().GetMethod("GetComponents");
         return GetComponents[this](type);
     }
+    static Array<Object*>* FindObjectsOfType(MonoType * type){
+        Method<Array<Object*>*> FindObjectsOfType = GetClass().GetMethod("FindObjectsOfType", {"type"});
+        return FindObjectsOfType(type);
+    }
     Component* GetComponent(MonoType* type){
         auto GetComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::GetComponent");
         return GetComponent(this, type);
@@ -159,9 +163,9 @@ struct GameObject : Object{
         auto tag = get_name[this]();
         return tag->str();
     }
-    void SetName(std::string tag){
+    void SetName(std::string name){
         Method<void> set_name = GetClass().GetMethod("set_name");
-        set_name[this](CreateMonoString(tag));
+        set_name[this](CreateMonoString(name));
     }
 };
 struct Transform : Component{
@@ -332,6 +336,15 @@ struct Shader : Object{
     static Shader* Find(std::string shaderName){
         Method<Shader*> Find = GetClass().GetMethod("Find");
         return Find(CreateMonoString(shaderName));
+    }
+    std::string GetName(){
+        Method<String*> get_name = GetClass().GetMethod("get_name");
+        auto tag = get_name[this]();
+        return tag->str();
+    }
+    void SetName(std::string name){
+        Method<void> set_name = GetClass().GetMethod("set_name");
+        set_name[this](CreateMonoString(name));
     }
 
 };
