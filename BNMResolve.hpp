@@ -108,7 +108,7 @@ struct GameObject : Object{
         return Class("UnityEngine", "GameObject");
     }
     static void Destroy(Object* obj){
-        Method<void> Destroy = Class("UnityEngine", "Object").GetMethod("Destroy");
+        Method<void> Destroy = Class("UnityEngine", "Object").GetMethod("Destroy", 1);
         Destroy(obj);
     }
     static GameObject *CreatePrimitive(PrimitiveType primitiveType){
