@@ -8,7 +8,7 @@ using namespace UnityEngine;
 struct Component;
 struct GameObject;
 struct Transform;
-struct Behavior;
+struct Behaviour;
 struct Canvas;
 struct CanvasScaler;
 struct Camera;
@@ -26,6 +26,12 @@ struct Font;
 struct LineRenderer;
 struct Rigidbody;
 struct Time;
+struct Collider;
+struct SphereCollider;
+struct BoxCollider;
+struct MeshRenderer;
+struct Resources;
+struct AssetBundle;
 
 //enums
 enum RenderMode
@@ -54,6 +60,8 @@ enum TextAnchor
     LowerCenter,
     LowerRight
 };
+
+
 
 //structs
 struct Component : Object{
@@ -100,7 +108,7 @@ struct GameObject : Object{
         return Class("UnityEngine", "GameObject");
     }
     static void Destroy(Object* obj){
-        Method<void> Destroy = Class("UnityEngine", "Object").GetMethod("Destroy", 1);
+        Method<void> Destroy = Class("UnityEngine", "Object").GetMethod("Destroy");
         Destroy(obj);
     }
     static GameObject *CreatePrimitive(PrimitiveType primitiveType){
@@ -215,6 +223,10 @@ struct Transform : Component{
     void SetForward(Vector3 forward){
         Method<void> set_forward = GetClass().GetMethod("set_forward");
         set_forward[this](forward);
+    }
+    Vector3 GetRight(){
+        Method<Vector3> get_right = GetClass().GetMethod("get_right");
+        return get_right[this]();
     }
     Vector3 GetLocalScale(){
         Method<Vector3> get_localScale = GetClass().GetMethod("get_localScale");
@@ -470,6 +482,31 @@ struct Text : MaskableGraphic{
         Method<void> set_text = GetClass().GetMethod("set_text");
         set_text[this](CreateMonoString(text));
     }
+    bool GetTextResizeForBestFit(){
+        Method<bool> get_resizeTextForBestFit = GetClass().GetMethod("get_resizeTextForBestFit");
+        return get_resizeTextForBestFit[this]();
+    }
+    void SetTextResizeForBestFit(bool val){
+        Method<void> set_resizeTextForBestFit = GetClass().GetMethod("set_resizeTextForBestFit");
+        set_resizeTextForBestFit[this](val);
+    }
+
+    int GetResizeTextMaxSize(){
+        Method<int> get_resizeTextMaxSize = GetClass().GetMethod("get_resizeTextMaxSize");
+        return get_resizeTextMaxSize[this]();
+    }
+    void SetResizeTextMaxSize(int val){
+        Method<void> set_resizeTextMaxSize = GetClass().GetMethod("set_resizeTextMaxSize");
+        set_resizeTextMaxSize[this](val);
+    }
+    int GetResizeTextMinSize(){
+        Method<int> get_resizeTextMinSize = GetClass().GetMethod("get_resizeTextMinSize");
+        return get_resizeTextMinSize[this]();
+    }
+    void SetResizeTextMinSize(int val){
+        Method<void> set_resizeTextMinSize = GetClass().GetMethod("set_resizeTextMinSize");
+        set_resizeTextMinSize[this](val);
+    }
 };
 struct LineRenderer : Renderer{
     static MonoType* GetType(){
@@ -570,4 +607,129 @@ struct Time{
         return get_frameCount();
     }
 
+};
+struct Collider : Component{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "Collider").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "Collider");
+    }
+
+    bool GetIsTrigger(){
+        auto get_isTrigger = (bool(*)(void*))GetExternMethod("UnityEngine.Collider::get_isTrigger");
+        return get_isTrigger(this);
+    }
+    void SetIsTrigger(bool val){
+        auto set_isTrigger = (void(*)(void*, bool))GetExternMethod("UnityEngine.Collider::set_isTrigger");
+        set_isTrigger(this, val);
+    }
+    Rigidbody GetAttachedRigibody(){
+        auto get_attachedRigidbody = (Rigidbody(*)(void*))GetExternMethod("UnityEngine.Collider::get_attachedRigidbody");
+        return get_attachedRigidbody(this);
+    }
+    void SetEnabled(bool val){
+        auto set_enabled = (void(*)(void*, bool))GetExternMethod("UnityEngine.Collider::set_enabled");
+        set_enabled(this, val);
+    }
+    bool GetEnabled(){
+        auto get_enabled = (bool(*)(void*))GetExternMethod("UnityEngine.Collider::get_enabled");
+        return get_enabled(this);
+    }
+};
+struct SphereCollider : Collider{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "SphereCollider").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "SphereCollider");
+    }
+    Vector3 GetCenter(){
+        Method<Vector3> get_center = GetClass().GetMethod("get_center");
+        return get_center[this]();
+    }
+    float GetRadius(){
+        auto get_radius = (float(*)(void*)) GetExternMethod("UnityEngine.SphereCollider::get_radius");
+        return get_radius(this);
+    }
+    void SetRadius(float val){
+        auto set_radius = (void(*)(void*, float)) GetExternMethod("UnityEngine.SphereCollider::set_radius");
+        set_radius(this, val);
+    }
+};
+struct BoxCollider : Collider{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "BoxCollider").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "BoxCollider");
+    }
+    Vector3 GetCenter(){
+        Method<Vector3> get_center = GetClass().GetMethod("get_center");
+        return get_center[this]();
+    }
+    Vector3 GetSize(){
+        Method<Vector3> get_size = GetClass().GetMethod("get_size");
+        return get_size[this]();
+    }
+    void SetSize(Vector3 val){
+        Method<void> set_size = GetClass().GetMethod("set_size");
+        return set_size[this](val);
+    }
+};
+struct MeshRenderer : Renderer{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "MeshRenderer").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "MeshRenderer");
+    }
+};
+struct Resources{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "Resources").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "Resources");
+    }
+    static Object* Load(std::string path){
+        Method<Object*> Load = GetClass().GetMethod("Load", 1);
+        return Load(path);
+    }
+    static Object* Load(std::string path, MonoType* systemTypeInstance){
+        Method<Object*> Load = GetClass().GetMethod("Load", 2);
+        return Load(CreateMonoString(path), systemTypeInstance);
+    }
+    static Array<Object*>* LoadAll(std::string path, MonoType* systemTypeInstance){
+        Method<Array<Object*>*> LoadAll = GetClass().GetMethod("LoadAll", 2);
+        return LoadAll(CreateMonoString(path), systemTypeInstance);
+    }
+    static Object* GetBuiltinResource(MonoType* type, std::string path){
+        auto GetBuiltinResource = (Object *(*)(MonoType*, String*))GetExternMethod("UnityEngine.Resources::GetBuiltinResource");
+        return GetBuiltinResource(type, CreateMonoString(path));
+    }
+};
+struct AssetBundle : Object{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "AssetBundle").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "AssetBundle");
+    }
+    static AssetBundle* LoadFromFile(std::string path){
+        Method<AssetBundle*> LoadFromFile = GetClass().GetMethod("LoadFromFile", 1);
+        return LoadFromFile(CreateMonoString(path));
+    }
+    void Unload(bool unloadAllLoadedObjects){
+        auto Unload = (void (*)(AssetBundle *, bool))GetExternMethod("UnityEngine.AssetBundle::Unload");
+        Unload(this, unloadAllLoadedObjects);
+    }
+    Object* LoadAsset(std::string name){
+        Method<Object*> LoadAsset = GetClass().GetMethod("LoadAsset", 1);
+        return LoadAsset[this](CreateMonoString(name));
+    }
+    Object* LoadAsset(std::string name, MonoType* type){
+        Method<Object*> LoadAsset = GetClass().GetMethod("LoadAsset", 2);
+        return LoadAsset[this](CreateMonoString(name), type);
+    }
 };
