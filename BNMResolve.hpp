@@ -32,6 +32,8 @@ struct BoxCollider;
 struct MeshRenderer;
 struct Resources;
 struct AssetBundle;
+struct LayerMask;
+struct Physics;
 
 //enums
 enum RenderMode
@@ -61,7 +63,13 @@ enum TextAnchor
     LowerRight
 };
 
-
+enum ForceMode
+{
+    Force = 0,
+    Acceleration = 5,
+    Impulse = 1,
+    VelocityChange = 2
+};
 
 //structs
 struct Component : Object{
@@ -131,6 +139,10 @@ struct GameObject : Object{
     static Array<Object*>* FindObjectsOfType(MonoType * type){
         Method<Array<Object*>*> FindObjectsOfType = GetClass().GetMethod("FindObjectsOfType", {"type"});
         return FindObjectsOfType(type);
+    }
+    static Object* FindObjectOfType(MonoType* type){
+        Method<Object*> FindObjectOfType = GetClass().GetMethod("FindObjectOfType", {"type"});
+        return FindObjectOfType(type);
     }
     Component* GetComponent(MonoType* type){
         auto GetComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::GetComponent");
@@ -425,6 +437,30 @@ struct Graphic : UIBehavior{
     static Class GetClass(){
         return Class("UnityEngine.UI", "Graphic");
     }
+    Color GetColor(){
+        Method<Color> get_color = GetClass().GetMethod("get_color");
+        return get_color[this]();
+    }
+    void SetColor(Color color){
+        Method<void> set_color = GetClass().GetMethod("set_color");
+        set_color[this](color);
+    }
+    Canvas* GetCanvas(){
+        Method<Canvas*> get_canvas = GetClass().GetMethod("get_canvas");
+        return get_canvas[this]();
+    }
+    Material* GetMaterial(){
+        Method<Material*> get_material = GetClass().GetMethod("get_material");
+        return get_material[this]();
+    }
+    void SetMaterial(Material* material){
+        Method<void> set_material = GetClass().GetMethod("set_material");
+        set_material[this](material);
+    }
+    RectTransform* GetRectTransform() {
+        Method<RectTransform*> get_rectTransform = GetClass().GetMethod("get_rectTransform");
+        return get_rectTransform[this]();
+    }
 };
 struct MaskableGraphic : Graphic{
     static MonoType* GetType(){
@@ -581,6 +617,10 @@ struct Rigidbody : Component{
         Method<Vector3> get_velocity = GetClass().GetMethod("get_velocity");
         return get_velocity[this]();
     }
+    void AddForce(Vector3 force, ForceMode mode){
+        Method<void> AddForce = GetClass().GetMethod("AddForce", {"force", "mode"});
+        AddForce[this](force, mode);
+    }
 
 };
 struct Time{
@@ -733,3 +773,55 @@ struct AssetBundle : Object{
         return LoadAsset[this](CreateMonoString(name), type);
     }
 };
+struct Physics{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "Physics").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "Physics");
+    }
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo){
+        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo"});
+        return Raycast(origin, direction, hitInfo);
+    }
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo, float maxDistance){
+        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance"});
+        return Raycast(origin, direction, hitInfo, maxDistance);
+    }
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo, float maxDistance, int layerMask){
+        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance", "layerMask"});
+        return Raycast(origin, direction, hitInfo, maxDistance, layerMask);
+    }
+
+    static void SetGravity(Vector3 gravity){
+        Method<void> set_gravity = GetClass().GetMethod("set_gravity");
+        set_gravity(gravity);
+    }
+    static Vector3 GetGravity(){
+        Method<Vector3> get_gravity = GetClass().GetMethod("get_gravity");
+        return get_gravity();
+    }
+};
+
+
+// Structs
+struct LayerMask{
+    int m_Mask;
+    int GetValue();
+    static String* LayerToName(int);
+    static int NameToLayer(String*);
+};
+
+int LayerMask::GetValue() {
+    return m_Mask;
+}
+
+String *LayerMask::LayerToName(int layer) {
+    auto layerToName = (String*(*)(int))GetExternMethod("UnityEngine.LayerMask::LayerToName");
+    return layerToName(layer);
+}
+
+int LayerMask::NameToLayer(BNM::Structures::Mono::String * name) {
+    auto nameToLayer = (int(*)(String*))GetExternMethod("UnityEngine.LayerMask::NameToLayer");
+    return nameToLayer(name);
+}
