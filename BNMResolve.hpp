@@ -1,3 +1,4 @@
+#pragma once
 #include "../Utils/includes.h"
 
 using namespace BNM;
@@ -32,7 +33,6 @@ struct BoxCollider;
 struct MeshRenderer;
 struct Resources;
 struct AssetBundle;
-struct LayerMask;
 struct Physics;
 
 //enums
