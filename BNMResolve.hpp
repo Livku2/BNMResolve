@@ -680,7 +680,7 @@ struct Collider : Component{
         auto set_isTrigger = (void(*)(void*, bool))GetExternMethod("UnityEngine.Collider::set_isTrigger");
         set_isTrigger(this, val);
     }
-    Rigidbody GetAttachedRigibody(){
+    Rigidbody* GetAttachedRigibody(){
         auto get_attachedRigidbody = (Rigidbody(*)(void*))GetExternMethod("UnityEngine.Collider::get_attachedRigidbody");
         return get_attachedRigidbody(this);
     }
