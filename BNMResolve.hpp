@@ -337,6 +337,10 @@ struct CanvasScaler : UIBehavior{
     static Class GetClass(){
         return Class("UnityEngine.UI", "CanvasScaler");
     }
+    void SetDynamicPixelsPerUnit(float canvasScaleFloat){
+        Method<void> set_dynamicPixelsPerUnit = GetClass().GetMethod("set_dynamicPixelsPerUnit");
+        set_dynamicPixelsPerUnit[this](canvasScaleFloat);
+    }
 };
 struct BaseRaycaster : UIBehavior{
     static MonoType* GetType(){
