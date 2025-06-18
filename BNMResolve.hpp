@@ -71,6 +71,14 @@ enum ForceMode
     VelocityChange = 2
 };
 
+enum FontStyle
+{
+    Normal,
+    Bold,
+    Italic,
+    BoldAndItalic
+};
+
 //structs
 struct Component : Object{
     static MonoType* GetType(){
@@ -271,6 +279,14 @@ struct Transform : Component{
     void SetLocalRotation(Quaternion rotation){
         Method<void> set_rotation = GetClass().GetMethod("set_localRotation");
         set_rotation[this](rotation);
+    }
+    Vector3 GetLocalEulerAngles() {
+        Method<Vector3> get_localEulerAngles = GetClass().GetMethod("get_localEulerAngles");
+        return get_localEulerAngles[this]();
+    }
+    void SetLocalEulerAngles(Vector3 val) {
+        Method<void> set_localEulerAngles = GetClass().GetMethod("set_localEulerAngles");
+        set_localEulerAngles[this](val);
     }
 };
 struct Behaviour : Component{
@@ -562,6 +578,14 @@ struct Text : MaskableGraphic{
     void SetSupportRichText(bool val) {
         Method<void> set_supportRichText = GetClass().GetMethod("set_supportRichText");
         set_supportRichText[this](val);
+    }
+    FontStyle GetFontStyle() {
+        Method<FontStyle> get_fontStyle = GetClass().GetMethod("get_fontStyle");
+        return get_fontStyle[this]();
+    }
+    void SetFontStyle(FontStyle val) {
+        Method<void> set_fontStyle = GetClass().GetMethod("set_fontStyle");
+        set_fontStyle[this](val);
     }
 };
 struct LineRenderer : Renderer{
