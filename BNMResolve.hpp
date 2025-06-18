@@ -551,6 +551,14 @@ struct Text : MaskableGraphic{
         Method<void> set_resizeTextMinSize = GetClass().GetMethod("set_resizeTextMinSize");
         set_resizeTextMinSize[this](val);
     }
+    bool GetSupportRichText() {
+        Method<bool> get_supportRichText = GetClass().GetMethod("get_supportRichText");
+        return get_supportRichText[this]();
+    }
+    void SetSupportRichText(bool val) {
+        Method<void> set_supportRichText = GetClass().GetMethod("set_supportRichText");
+        set_supportRichText[this](val);
+    }
 };
 struct LineRenderer : Renderer{
     static MonoType* GetType(){
