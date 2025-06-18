@@ -228,6 +228,10 @@ struct Transform : Component{
         Method<void> set_parent = GetClass().GetMethod("set_parent");
         set_parent[this](parent);
     }
+    void SetParent(Transform* parent, bool worldPositionStays){
+        Method<void*> set_parent = GetClass().GetMethod("SetParent", 2);
+        set_parent[this](parent, worldPositionStays);
+    }
     Vector3 GetForward(){
         Method<Vector3> get_forward = GetClass().GetMethod("get_forward");
         return get_forward[this]();
