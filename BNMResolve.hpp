@@ -86,6 +86,9 @@ struct NamedObject : Object{ // pretty much Object but for some reason BNMDev di
     static Class GetClass() {
         return Class("UnityEngine", "Object");
     }
+    static MonoType* GetType() {
+        return GetClass().GetMonoType();
+    }
 
     std::string GetName() {
         Method<String*> get_name = GetClass().GetMethod("get_name");
@@ -158,6 +161,7 @@ struct GameObject : NamedObject{
         Method<Array<Component*>*> GetComponentsInChildren = GetClass().GetMethod("GetComponentsInChildren");
         return GetComponentsInChildren[this](type);
     }
+
     Array<Component*>* GetComponentsInParent(MonoType* type){
         Method<Array<Component*>*> GetComponentsInParent = GetClass().GetMethod("GetComponentsInParent");
         return GetComponentsInParent[this](type);
@@ -165,6 +169,10 @@ struct GameObject : NamedObject{
     Array<Component*>* GetComponents(MonoType* type){
         Method<Array<Component*>*> GetComponents = GetClass().GetMethod("GetComponents");
         return GetComponents[this](type);
+    }
+    Component* GetComponentInParent(MonoType* type){
+        Method<Component*> GetComponentInParent = GetClass().GetMethod("GetComponentInParent", 1);
+        return GetComponentInParent[this](type);
     }
     static Array<Object*>* FindObjectsOfType(MonoType * type){
         Method<Array<Object*>*> FindObjectsOfType = GetClass().GetMethod("FindObjectsOfType", {"type"});
@@ -310,6 +318,14 @@ struct Transform : Component{
         Method<void> set_localEulerAngles = GetClass().GetMethod("set_localEulerAngles");
         set_localEulerAngles[this](val);
     }
+    Vector3 GetEulerAngles() {
+        Method<Vector3> get_eulerAngles = GetClass().GetMethod("get_eulerAngles");
+        return get_eulerAngles[this]();
+    }
+    void SetEulerAngles(Vector3 val) {
+        Method<void> set_eulerAngles = GetClass().GetMethod("set_eulerAngles");
+        set_eulerAngles[this](val);
+    }
 };
 struct Behaviour : Component{
     static MonoType* GetType(){
@@ -379,9 +395,21 @@ struct CanvasScaler : UIBehavior{
     static Class GetClass(){
         return Class("UnityEngine.UI", "CanvasScaler");
     }
+    float GetDynamicPixelsPerUnit() {
+        Method<float> get_dynamicPixelsPerUnit = GetClass().GetMethod("get_dynamicPixelsPerUnit");
+        return get_dynamicPixelsPerUnit[this]();
+    }
     void SetDynamicPixelsPerUnit(float canvasScaleFloat){
         Method<void> set_dynamicPixelsPerUnit = GetClass().GetMethod("set_dynamicPixelsPerUnit");
         set_dynamicPixelsPerUnit[this](canvasScaleFloat);
+    }
+    float GetReferencePixelsPerUnit() {
+        Method<float> get_referencePixelsPerUnit = GetClass().GetMethod("get_referencePixelsPerUnit");
+        return get_referencePixelsPerUnit[this]();
+    }
+    void SetReferencePixelsPerUnit(float canvasScaleFloat){
+        Method<void> set_referencePixelsPerUnit = GetClass().GetMethod("set_referencePixelsPerUnit");
+        set_referencePixelsPerUnit[this](canvasScaleFloat);
     }
 };
 struct BaseRaycaster : UIBehavior{
@@ -717,6 +745,10 @@ struct Time{
         auto get_time = (float(*)())GetExternMethod("UnityEngine.Time::get_time");
         return get_time();
     }
+    static float GetUnscaledDeltaTime() {
+        auto get_time = (float(*)())GetExternMethod("UnityEngine.Time::get_unscaledDeltaTime");
+        return get_time();
+    }
 };
 struct Collider : Component{
     static MonoType* GetType(){
@@ -814,10 +846,10 @@ struct Resources{
         Method<Array<Object*>*> LoadAll = GetClass().GetMethod("LoadAll", 2);
         return LoadAll(CreateMonoString(path), systemTypeInstance);
     }
-        static Array<Object*>* FindObjectsOfTypeAll(MonoType* type) {
-            Method<Array<Object*>*> FindObjectsOfTypeAll = GetClass().GetMethod("FindObjectsOfTypeAll", 1);
-            return FindObjectsOfTypeAll(type);
-        }
+    static Array<Object*>* FindObjectsOfTypeAll(MonoType* type) {
+        Method<Array<Object*>*> FindObjectsOfTypeAll = GetClass().GetMethod("FindObjectsOfTypeAll", 1);
+        return FindObjectsOfTypeAll(type);
+    }
     static Object* GetBuiltinResource(MonoType* type, std::string path){
         auto GetBuiltinResource = (Object *(*)(MonoType*, String*))GetExternMethod("UnityEngine.Resources::GetBuiltinResource");
         return GetBuiltinResource(type, CreateMonoString(path));
@@ -854,15 +886,15 @@ struct Physics{
     static Class GetClass(){
         return Class("UnityEngine", "Physics");
     }
-    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo){
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit* hitInfo){
         Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo"});
         return Raycast(origin, direction, hitInfo);
     }
-    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo, float maxDistance){
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit* hitInfo, float maxDistance){
         Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance"});
         return Raycast(origin, direction, hitInfo, maxDistance);
     }
-    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo, float maxDistance, int layerMask){
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit* hitInfo, float maxDistance, int layerMask){
         Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance", "layerMask"});
         return Raycast(origin, direction, hitInfo, maxDistance, layerMask);
     }
@@ -893,4 +925,3 @@ struct LayerMask{
         return nameToLayer(name);
     }
 };
-
