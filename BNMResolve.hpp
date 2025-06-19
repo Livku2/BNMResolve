@@ -87,13 +87,14 @@ struct NamedObject : Object{ // pretty much Object but for some reason BNMDev di
         return Class("UnityEngine", "Object");
     }
 
-    String* GetName() {
+    std::string GetName() {
         Method<String*> get_name = GetClass().GetMethod("get_name");
-        return get_name[this]();
+        String* name = get_name[this]();
+        return name->str();
     }
-    void SetName(String* name) {
+    void SetName(std::string name) {
         Method<void> set_name = GetClass().GetMethod("set_name", 1);
-        set_name[this](name);
+        set_name[this](CreateMonoString(name));
     }
 };
 
