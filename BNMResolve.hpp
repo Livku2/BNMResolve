@@ -6,6 +6,7 @@ using namespace Structures::Unity;
 using namespace Structures::Mono;
 using namespace UnityEngine;
 
+struct NamedObject;
 struct Component;
 struct GameObject;
 struct Transform;
@@ -34,6 +35,7 @@ struct MeshRenderer;
 struct Resources;
 struct AssetBundle;
 struct Physics;
+
 
 //enums
 enum RenderMode
@@ -80,7 +82,22 @@ enum FontStyle
 };
 
 //structs
-struct Component : Object{
+struct NamedObject : Object{ // pretty much Object but for some reason BNMDev didn't add .name for it
+    static Class GetClass() {
+        return Class("UnityEngine", "Object");
+    }
+
+    String* GetName() {
+        Method<String*> get_name = GetClass().GetMethod("get_name");
+        return get_name[this]();
+    }
+    void SetName(String* name) {
+        Method<void> set_name = GetClass().GetMethod("set_name", 1);
+        set_name[this](name);
+    }
+};
+
+struct Component : NamedObject{
     static MonoType* GetType(){
         return Class("UnityEngine", "Component").GetMonoType();
     }
@@ -116,7 +133,7 @@ struct Component : Object{
         set_name[this](CreateMonoString(tag));
     }
 };
-struct GameObject : Object{
+struct GameObject : NamedObject{
     static MonoType* GetType(){
         return Class("UnityEngine", "GameObject").GetMonoType();
     }
@@ -256,6 +273,10 @@ struct Transform : Component{
         Method<Vector3> get_right = GetClass().GetMethod("get_right");
         return get_right[this]();
     }
+    Vector3 GetUp() {
+        Method<Vector3> get_up = GetClass().GetMethod("get_up");
+        return get_up[this]();
+    }
     Vector3 GetLocalScale(){
         Method<Vector3> get_localScale = GetClass().GetMethod("get_localScale");
         return get_localScale[this]();
@@ -378,7 +399,7 @@ struct GraphicRaycaster : BaseRaycaster{
         return Class("UnityEngine.UI", "GraphicRaycaster");
     }
 };
-struct Shader : Object{
+struct Shader : NamedObject{
     static MonoType* GetType(){
         return Class("UnityEngine", "Shader").GetMonoType();
     }
@@ -400,7 +421,7 @@ struct Shader : Object{
     }
 
 };
-struct Material : Object{
+struct Material : NamedObject{
     static MonoType* GetType(){
         return Class("UnityEngine", "Material").GetMonoType();
     }
@@ -498,7 +519,7 @@ struct MaskableGraphic : Graphic{
         return Class("UnityEngine.UI", "MaskableGraphic");
     }
 };
-struct Font : Object{
+struct Font : NamedObject{
     static MonoType* GetType(){
         return Class("UnityEngine", "Font").GetMonoType();
     }
@@ -579,6 +600,7 @@ struct Text : MaskableGraphic{
         Method<void> set_supportRichText = GetClass().GetMethod("set_supportRichText");
         set_supportRichText[this](val);
     }
+
     FontStyle GetFontStyle() {
         Method<FontStyle> get_fontStyle = GetClass().GetMethod("get_fontStyle");
         return get_fontStyle[this]();
@@ -690,7 +712,10 @@ struct Time{
         auto get_frameCount = (int(*)())GetExternMethod("UnityEngine.Time::get_frameCount");
         return get_frameCount();
     }
-
+    static float GetTime() {
+        auto get_time = (float(*)())GetExternMethod("UnityEngine.Time::get_time");
+        return get_time();
+    }
 };
 struct Collider : Component{
     static MonoType* GetType(){
@@ -788,12 +813,16 @@ struct Resources{
         Method<Array<Object*>*> LoadAll = GetClass().GetMethod("LoadAll", 2);
         return LoadAll(CreateMonoString(path), systemTypeInstance);
     }
+        static Array<Object*>* FindObjectsOfTypeAll(MonoType* type) {
+            Method<Array<Object*>*> FindObjectsOfTypeAll = GetClass().GetMethod("FindObjectsOfTypeAll", 1);
+            return FindObjectsOfTypeAll(type);
+        }
     static Object* GetBuiltinResource(MonoType* type, std::string path){
         auto GetBuiltinResource = (Object *(*)(MonoType*, String*))GetExternMethod("UnityEngine.Resources::GetBuiltinResource");
         return GetBuiltinResource(type, CreateMonoString(path));
     }
 };
-struct AssetBundle : Object{
+struct AssetBundle : NamedObject{
     static MonoType* GetType(){
         return Class("UnityEngine", "AssetBundle").GetMonoType();
     }
@@ -851,21 +880,16 @@ struct Physics{
 // Structs
 struct LayerMask{
     int m_Mask;
-    int GetValue();
-    static String* LayerToName(int);
-    static int NameToLayer(String*);
+    int GetValue() {
+        return m_Mask;
+    };
+    static String* LayerToName(int layer){
+        auto layerToName = (String*(*)(int))GetExternMethod("UnityEngine.LayerMask::LayerToName");
+        return layerToName(layer);
+    };
+    static int NameToLayer(BNM::Structures::Mono::String * name) {
+        auto nameToLayer = (int(*)(String*))GetExternMethod("UnityEngine.LayerMask::NameToLayer");
+        return nameToLayer(name);
+    }
 };
 
-int LayerMask::GetValue() {
-    return m_Mask;
-}
-
-String *LayerMask::LayerToName(int layer) {
-    auto layerToName = (String*(*)(int))GetExternMethod("UnityEngine.LayerMask::LayerToName");
-    return layerToName(layer);
-}
-
-int LayerMask::NameToLayer(BNM::Structures::Mono::String * name) {
-    auto nameToLayer = (int(*)(String*))GetExternMethod("UnityEngine.LayerMask::NameToLayer");
-    return nameToLayer(name);
-}
