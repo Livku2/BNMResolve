@@ -922,19 +922,6 @@ struct Physics{
         return Raycast(origin, direction, hitInfo, maxDistance, layerMask);
     }
 
-    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo){
-        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo"});
-        return Raycast(origin, direction, &hitInfo);
-    }
-    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo, float maxDistance){
-        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance"});
-        return Raycast(origin, direction, &hitInfo, maxDistance);
-    }
-    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo, float maxDistance, int layerMask){
-        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance", "layerMask"});
-        return Raycast(origin, direction, &hitInfo, maxDistance, layerMask);
-    }
-
     static void SetGravity(Vector3 gravity){
         Method<void> set_gravity = GetClass().GetMethod("set_gravity");
         set_gravity(gravity);
