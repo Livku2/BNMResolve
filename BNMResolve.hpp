@@ -215,6 +215,14 @@ struct GameObject : NamedObject{
         auto get_activeSelf = (bool (*)(void*))GetExternMethod("UnityEngine.GameObject::get_activeSelf");
         return get_activeSelf(this);
     }
+    void SetLayer(int layer) {
+        auto set_layer = (void (*)(void*, int))GetExternMethod("UnityEngine.GameObject::set_layer");
+        set_layer(this, layer);
+    }
+    int GetLayer() {
+        auto get_layer = (int (*)(void*))GetExternMethod("UnityEngine.GameObject::get_layer");
+        return get_layer(this);
+    }
 
     std::string GetName(){
         Method<String*> get_name = GetClass().GetMethod("get_name");
@@ -716,7 +724,14 @@ struct Rigidbody : Component{
         Method<void> AddForce = GetClass().GetMethod("AddForce", {"force", "mode"});
         AddForce[this](force, mode);
     }
-
+    void SetIsKinematic(bool kinematic) {
+        auto set_isKinematic = (void(*)(void*, bool))GetExternMethod("UnityEngine.Rigidbody::set_isKinematic");
+        set_isKinematic(this, kinematic);
+    }
+    bool GetIsKinematic() {
+        auto get_isKinematic = (bool(*)(void*))GetExternMethod("UnityEngine.Rigidbody::get_isKinematic");
+        return get_isKinematic(this);
+    }
 };
 struct Time{
     static MonoType* GetType(){
@@ -819,6 +834,14 @@ struct BoxCollider : Collider{
         return set_size[this](val);
     }
 };
+struct MeshCollider : Collider{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "MeshCollider").GetMonoType();
+    }
+    static Class GetClass() {
+        return Class("UnityEngine", "MeshCollider");
+    }
+};
 struct MeshRenderer : Renderer{
     static MonoType* GetType(){
         return Class("UnityEngine", "MeshRenderer").GetMonoType();
@@ -897,6 +920,19 @@ struct Physics{
     static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit* hitInfo, float maxDistance, int layerMask){
         Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance", "layerMask"});
         return Raycast(origin, direction, hitInfo, maxDistance, layerMask);
+    }
+
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo){
+        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo"});
+        return Raycast(origin, direction, &hitInfo);
+    }
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo, float maxDistance){
+        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance"});
+        return Raycast(origin, direction, &hitInfo, maxDistance);
+    }
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo, float maxDistance, int layerMask){
+        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance", "layerMask"});
+        return Raycast(origin, direction, &hitInfo, maxDistance, layerMask);
     }
 
     static void SetGravity(Vector3 gravity){
