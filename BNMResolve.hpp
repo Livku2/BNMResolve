@@ -258,7 +258,7 @@ struct Gradient {
         set_colorKeys(this, keyArr);
     }
 
-    void SetAlphaKeys(std::vector<GradientAlphaKey> keys) {
+    void SetAlphaKeys(std::vector<GradientAlphaKey*> keys) {
         auto set_alphaKeys = (void(*)(void*, Array<GradientAlphaKey*>*))GetExternMethod("UnityEngine.Gradient::set_alphaKeys");
         Array<GradientAlphaKey*>* keyArr{};
         keyArr->CopyFrom(keys);
