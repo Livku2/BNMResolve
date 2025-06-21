@@ -251,24 +251,24 @@ struct Gradient {
         return GetClass().GetMonoType();
     }
 
-    void SetColorKeys(std::vector<GradientColorKey> keys) {
-        auto set_colorKeys = (void(*)(void*, Array<GradientColorKey>*))GetExternMethod("UnityEngine.Gradient::set_colorKeys");
-        Array<GradientColorKey>* keyArr{};
+    void SetColorKeys(std::vector<GradientColorKey*> keys) {
+        auto set_colorKeys = (void(*)(void*, Array<GradientColorKey*>*))GetExternMethod("UnityEngine.Gradient::set_colorKeys");
+        Array<GradientColorKey*>* keyArr{};
         keyArr->CopyFrom(keys);
         set_colorKeys(this, keyArr);
     }
 
     void SetAlphaKeys(std::vector<GradientAlphaKey> keys) {
-        auto set_alphaKeys = (void(*)(void*, Array<GradientAlphaKey>*))GetExternMethod("UnityEngine.Gradient::set_alphaKeys");
-        Array<GradientAlphaKey>* keyArr{};
+        auto set_alphaKeys = (void(*)(void*, Array<GradientAlphaKey*>*))GetExternMethod("UnityEngine.Gradient::set_alphaKeys");
+        Array<GradientAlphaKey*>* keyArr{};
         keyArr->CopyFrom(keys);
         set_alphaKeys(this, keyArr);
     }
 
-    void SetKeys(std::vector<GradientColorKey> colorKeys, std::vector<GradientAlphaKey> alphaKeys) {
-        auto SetKeysMethod = (void(*)(void*, Array<GradientColorKey>*, Array<GradientAlphaKey>*))GetExternMethod("UnityEngine.Gradient::SetKeys");
-        Array<GradientColorKey>* colorKeyArray{};
-        Array<GradientAlphaKey>* alphaKeyArray{};
+    void SetKeys(std::vector<GradientColorKey*> colorKeys, std::vector<GradientAlphaKey*> alphaKeys) {
+        auto SetKeysMethod = (void(*)(void*, Array<GradientColorKey*>*, Array<GradientAlphaKey*>*))GetExternMethod("UnityEngine.Gradient::SetKeys");
+        Array<GradientColorKey*>* colorKeyArray{};
+        Array<GradientAlphaKey*>* alphaKeyArray{};
         colorKeyArray->CopyFrom(colorKeys);
         alphaKeyArray->CopyFrom(alphaKeys);
         SetKeysMethod(this, colorKeyArray, alphaKeyArray);
