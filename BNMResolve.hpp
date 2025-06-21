@@ -87,65 +87,65 @@ enum FontStyle
 //structs
 struct GradientColorKey : Il2CppObject {
     static Class GetClass() {
-        return Class(O("UnityEngine"), O("GradientColorKey"));
+        return Class("UnityEngine", "GradientColorKey");
     }
     static MonoType* GetType() {
         return GetClass().GetMonoType();
     }
 
     Color GetColor() {
-        static Field<Color> color = GetClass().GetField(O("color"));
+        static Field<Color> color = GetClass().GetField("color");
         return color[this]();
     }
     void SetColor(Color value) {
-        static Field<Color> color = GetClass().GetField(O("color"));
+        static Field<Color> color = GetClass().GetField("color");
         color[this] = value;
     }
 
     float GetTime() {
-        static Field<float> time = GetClass().GetField(O("time"));
+        static Field<float> time = GetClass().GetField("time");
         time.SetInstance(this);
         return time();
     }
     void SetTime(float value) {
-        static Field<float> time = GetClass().GetField(O("time"));
+        static Field<float> time = GetClass().GetField("time");
         time.SetInstance(this);
         time = value;
     }
 };
 struct GradientAlphaKey : Il2CppObject {
     static Class GetClass() {
-        return Class(O("UnityEngine"), O("GradientAlphaKey"));
+        return Class("UnityEngine") "GradientAlphaKey");
     }
     static MonoType* GetType() {
         return GetClass().GetMonoType();
     }
 
     float GetAlpha() {
-        static Field<float> alpha = GetClass().GetField(O("alpha"));
+        static Field<float> alpha = GetClass().GetField("alpha");
         alpha.SetInstance(this);
         return alpha();
     }
     void SetAlpha(float value) {
-        static Field<float> alpha = GetClass().GetField(O("alpha"));
+        static Field<float> alpha = GetClass().GetField("alpha");
         alpha.SetInstance(this);
         alpha = value;
     }
 
     float GetTime() {
-        static Field<float> time = GetClass().GetField(O("time"));
+        static Field<float> time = GetClass().GetField("time");
         time.SetInstance(this);
         return time();
     }
     void SetTime(float value) {
-        static Field<float> time = GetClass().GetField(O("time"));
+        static Field<float> time = GetClass().GetField("time");
         time.SetInstance(this);
         time = value;
     }
 };
 struct Gradient {
     static Class GetClass() {
-        return Class(O("UnityEngine"), O("Gradient"));
+        return Class("UnityEngine", "Gradient");
     }
     static MonoType* GetType() {
         return GetClass().GetMonoType();
