@@ -35,6 +35,9 @@ struct MeshRenderer;
 struct Resources;
 struct AssetBundle;
 struct Physics;
+struct GradientColorKey;
+struct GradientAlphaKey;
+struct Gradient;
 
 
 //enums
@@ -82,6 +85,95 @@ enum FontStyle
 };
 
 //structs
+struct GradientColorKey : Il2CppObject {
+    static Class GetClass() {
+        return Class(O("UnityEngine"), O("GradientColorKey"));
+    }
+    static MonoType* GetType() {
+        return GetClass().GetMonoType();
+    }
+
+    Color GetColor() {
+        static Field<Color> color = GetClass().GetField(O("color"));
+        return color[this]();
+    }
+    void SetColor(Color value) {
+        static Field<Color> color = GetClass().GetField(O("color"));
+        color[this] = value;
+    }
+
+    float GetTime() {
+        static Field<float> time = GetClass().GetField(O("time"));
+        time.SetInstance(this);
+        return time();
+    }
+    void SetTime(float value) {
+        static Field<float> time = GetClass().GetField(O("time"));
+        time.SetInstance(this);
+        time = value;
+    }
+};
+struct GradientAlphaKey : Il2CppObject {
+    static Class GetClass() {
+        return Class(O("UnityEngine"), O("GradientAlphaKey"));
+    }
+    static MonoType* GetType() {
+        return GetClass().GetMonoType();
+    }
+
+    float GetAlpha() {
+        static Field<float> alpha = GetClass().GetField(O("alpha"));
+        alpha.SetInstance(this);
+        return alpha();
+    }
+    void SetAlpha(float value) {
+        static Field<float> alpha = GetClass().GetField(O("alpha"));
+        alpha.SetInstance(this);
+        alpha = value;
+    }
+
+    float GetTime() {
+        static Field<float> time = GetClass().GetField(O("time"));
+        time.SetInstance(this);
+        return time();
+    }
+    void SetTime(float value) {
+        static Field<float> time = GetClass().GetField(O("time"));
+        time.SetInstance(this);
+        time = value;
+    }
+};
+struct Gradient {
+    static Class GetClass() {
+        return Class(O("UnityEngine"), O("Gradient"));
+    }
+    static MonoType* GetType() {
+        return GetClass().GetMonoType();
+    }
+
+    void SetColorKeys(std::vector<GradientColorKey> keys) {
+        auto set_colorKeys = (void(*)(void*, Array<GradientColorKey>*))GetExternMethod("UnityEngine.Gradient::set_colorKeys");
+        Array<GradientColorKey>* keyArr{};
+        keyArr->CopyFrom(keys);
+        set_colorKeys(this, keyArr);
+    }
+
+    void SetAlphaKeys(std::vector<GradientAlphaKey> keys) {
+        auto set_alphaKeys = (void(*)(void*, Array<GradientAlphaKey>*))GetExternMethod("UnityEngine.Gradient::set_alphaKeys");
+        Array<GradientAlphaKey>* keyArr{};
+        keyArr->CopyFrom(keys);
+        set_alphaKeys(this, keyArr);
+    }
+
+    void SetKeys(std::vector<GradientColorKey> colorKeys, std::vector<GradientAlphaKey> alphaKeys) {
+        auto SetKeysMethod = (void(*)(void*, Array<GradientColorKey>*, Array<GradientAlphaKey>*))GetExternMethod("UnityEngine.Gradient::SetKeys");
+        Array<GradientColorKey>* colorKeyArray{};
+        Array<GradientAlphaKey>* alphaKeyArray{};
+        colorKeyArray->CopyFrom(colorKeys);
+        alphaKeyArray->CopyFrom(alphaKeys);
+        SetKeysMethod(this, colorKeyArray, alphaKeyArray);
+    }
+};
 struct NamedObject : Object{ // pretty much Object but for some reason BNMDev didn't add .name for it
     static Class GetClass() {
         return Class("UnityEngine", "Object");
@@ -695,6 +787,14 @@ struct LineRenderer : Renderer{
         Method<void> SetPosition = GetClass().GetMethod("SetPosition");
         SetPosition[this](index, position);
     }
+    Gradient* GetColorGradient() {
+        auto get_colorGradient = (Gradient*(*)(void*))GetExternMethod("UnityEngine.Gradient::get_colorGradient");
+        return get_colorGradient(this);
+    }
+    void SetColorGradient(Gradient gradient) {
+        auto set_colorGradient = (Gradient*(*)(void*, Gradient))GetExternMethod("UnityEngine.Gradient::set_colorGradient");
+        set_colorGradient(this, gradient);
+    }
 };
 
 struct Rigidbody : Component{
@@ -931,7 +1031,6 @@ struct Physics{
         return get_gravity();
     }
 };
-
 
 // Structs
 struct LayerMask{
