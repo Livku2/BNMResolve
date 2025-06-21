@@ -185,65 +185,16 @@ enum TextureFormat
 };
 
 //structs
-struct GradientColorKey : BNM::IL2CPP::Il2CppObject {
-    static Class GetClass() {
-        return Class("UnityEngine", "GradientColorKey");
-    }
-    static MonoType* GetType() {
-        return GetClass().GetMonoType();
-    }
-
-    Color GetColor() {
-        static Field<Color> color = GetClass().GetField("color");
-        return color[this]();
-    }
-    void SetColor(Color value) {
-        static Field<Color> color = GetClass().GetField("color");
-        color[this] = value;
-    }
-
-    float GetTime() {
-        static Field<float> time = GetClass().GetField("time");
-        time.SetInstance(this);
-        return time();
-    }
-    void SetTime(float value) {
-        static Field<float> time = GetClass().GetField("time");
-        time.SetInstance(this);
-        time = value;
-    }
+struct GradientColorKey {
+    BNM::Structures::Unity::Color color;
+    float time;
 };
-struct GradientAlphaKey : BNM::IL2CPP::Il2CppObject {
-    static Class GetClass() {
-        return Class("UnityEngine", "GradientAlphaKey");
-    }
-    static MonoType* GetType() {
-        return GetClass().GetMonoType();
-    }
 
-    float GetAlpha() {
-        static Field<float> alpha = GetClass().GetField("alpha");
-        alpha.SetInstance(this);
-        return alpha();
-    }
-    void SetAlpha(float value) {
-        static Field<float> alpha = GetClass().GetField("alpha");
-        alpha.SetInstance(this);
-        alpha = value;
-    }
-
-    float GetTime() {
-        static Field<float> time = GetClass().GetField("time");
-        time.SetInstance(this);
-        return time();
-    }
-    void SetTime(float value) {
-        static Field<float> time = GetClass().GetField("time");
-        time.SetInstance(this);
-        time = value;
-    }
+struct GradientAlphaKey {
+    float alpha;
+    float time;
 };
-struct Gradient {
+struct Gradient : BNM::IL2CPP::Il2CppObject {
     static Class GetClass() {
         return Class("UnityEngine", "Gradient");
     }
@@ -251,24 +202,24 @@ struct Gradient {
         return GetClass().GetMonoType();
     }
 
-    void SetColorKeys(std::vector<GradientColorKey*> keys) {
-        auto set_colorKeys = (void(*)(void*, Array<GradientColorKey*>*))GetExternMethod("UnityEngine.Gradient::set_colorKeys");
-        Array<GradientColorKey*>* keyArr{};
+    void SetColorKeys(std::vector<GradientColorKey> keys) {
+        auto set_colorKeys = (void(*)(void*, Array<GradientColorKey>*))GetExternMethod("UnityEngine.Gradient::set_colorKeys");
+        Array<GradientColorKey>* keyArr{};
         keyArr->CopyFrom(keys);
         set_colorKeys(this, keyArr);
     }
 
-    void SetAlphaKeys(std::vector<GradientAlphaKey*> keys) {
-        auto set_alphaKeys = (void(*)(void*, Array<GradientAlphaKey*>*))GetExternMethod("UnityEngine.Gradient::set_alphaKeys");
-        Array<GradientAlphaKey*>* keyArr{};
+    void SetAlphaKeys(std::vector<GradientAlphaKey> keys) {
+        auto set_alphaKeys = (void(*)(void*, Array<GradientAlphaKey>*))GetExternMethod("UnityEngine.Gradient::set_alphaKeys");
+        Array<GradientAlphaKey>* keyArr{};
         keyArr->CopyFrom(keys);
         set_alphaKeys(this, keyArr);
     }
 
-    void SetKeys(std::vector<GradientColorKey*> colorKeys, std::vector<GradientAlphaKey*> alphaKeys) {
-        auto SetKeysMethod = (void(*)(void*, Array<GradientColorKey*>*, Array<GradientAlphaKey*>*))GetExternMethod("UnityEngine.Gradient::SetKeys");
-        Array<GradientColorKey*>* colorKeyArray{};
-        Array<GradientAlphaKey*>* alphaKeyArray{};
+    void SetKeys(std::vector<GradientColorKey> colorKeys, std::vector<GradientAlphaKey> alphaKeys) {
+        auto SetKeysMethod = (void(*)(void*, Array<GradientColorKey>*, Array<GradientAlphaKey>*))GetExternMethod("UnityEngine.Gradient::SetKeys");
+        Array<GradientColorKey>* colorKeyArray = new Array<GradientColorKey>();
+        Array<GradientAlphaKey>* alphaKeyArray = new Array<GradientAlphaKey>();
         colorKeyArray->CopyFrom(colorKeys);
         alphaKeyArray->CopyFrom(alphaKeys);
         SetKeysMethod(this, colorKeyArray, alphaKeyArray);
@@ -891,13 +842,9 @@ struct LineRenderer : Renderer{
         Method<void> SetPosition = GetClass().GetMethod("SetPosition");
         SetPosition[this](index, position);
     }
-    Gradient* GetColorGradient() {
-        auto get_colorGradient = (Gradient*(*)(void*))GetExternMethod("UnityEngine.Gradient::get_colorGradient");
-        return get_colorGradient(this);
-    }
-    void SetColorGradient(Gradient gradient) {
-        auto set_colorGradient = (Gradient*(*)(void*, Gradient))GetExternMethod("UnityEngine.Gradient::set_colorGradient");
-        set_colorGradient(this, gradient);
+    void SetColorGradient(Gradient* gradient) {
+        auto setColorGradient = (void(*)(void*, Gradient*))GetExternMethod("UnityEngine.LineRenderer::SetColorGradient");
+        setColorGradient(this, gradient);
     }
 };
 
