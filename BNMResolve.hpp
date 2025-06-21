@@ -35,10 +35,12 @@ struct MeshRenderer;
 struct Resources;
 struct AssetBundle;
 struct Physics;
+struct LightmapData;
+struct LightmapSettings;
+struct Texture2D;
 struct GradientColorKey;
 struct GradientAlphaKey;
 struct Gradient;
-
 
 //enums
 enum RenderMode
@@ -84,8 +86,106 @@ enum FontStyle
     BoldAndItalic
 };
 
+// idk if this is correct or not
+enum TextureFormat
+{
+    Alpha8 = 1,
+    ARGB4444 = 2,
+    RGB24 = 3,
+    RGBA32 = 4,
+    ARGB32 = 5,
+    RGB565 = 7,
+    R16 = 9,
+    DXT1 = 10,
+    DXT5 = 12,
+    RGBA4444 = 13,
+    BGRA32 = 14,
+    RHalf = 15,
+    RGHalf = 16,
+    RGBAHalf = 17,
+    RFloat = 18,
+    RGFloat = 19,
+    RGBAFloat = 20,
+    YUY2 = 21,
+    RGB9e5Float = 22,
+    BC4 = 26,
+    BC5 = 27,
+    BC6H = 24,
+    BC7 = 25,
+    DXT1Crunched = 28,
+    DXT5Crunched = 29,
+    PVRTC_RGB2 = 30,
+    PVRTC_RGBA2 = 31,
+    PVRTC_RGB4 = 32,
+    PVRTC_RGBA4 = 33,
+    ETC_RGB4 = 34,
+    ATC_RGB4 = 35,
+    ATC_RGBA8 = 36,
+    EAC_R = 41,
+    EAC_R_SIGNED = 42,
+    EAC_RG = 43,
+    EAC_RG_SIGNED = 44,
+    ETC2_RGB4 = 45,
+    ETC2_RGB4_PUNCHTHROUGH_ALPHA = 46,
+    ETC2_RGBA8 = 47,
+    ASTC_4x4 = 48,
+    ASTC_5x5 = 49,
+    ASTC_6x6 = 50,
+    ASTC_8x8 = 51,
+    ASTC_10x10 = 52,
+    ASTC_12x12 = 53,
+    ETC_RGB4_3DS = 60,
+    ETC_RGBA8_3DS = 61,
+    RG16 = 62,
+    R8 = 63,
+    ETC_RGB4Crunched = 64,
+    ETC2_RGBA8Crunched = 65,
+    ASTC_HDR_4x4 = 66,
+    ASTC_HDR_5x5 = 67,
+    ASTC_HDR_6x6 = 68,
+    ASTC_HDR_8x8 = 69,
+    ASTC_HDR_10x10 = 70,
+    ASTC_HDR_12x12 = 71,
+    EAC_R_UNSIGNED = 72,
+    EAC_RG_UNSIGNED = 74,
+    ETC2_RGB4_UNSIGNED = 76,
+    ETC2_RGB4_SIGNED = 77,
+    ETC2_RGBA8_UNSIGNED = 78,
+    ETC2_RGBA8_SIGNED = 79,
+    ETC2_RGB4_PUNCHTHROUGH_ALPHA_UNSIGNED = 80,
+    ETC2_RGB4_PUNCHTHROUGH_ALPHA_SIGNED = 81,
+    ETC2_RGBA8_PUNCHTHROUGH_ALPHA_UNSIGNED = 82,
+    ETC2_RGBA8_PUNCHTHROUGH_ALPHA_SIGNED = 83,
+    PBGRA32 = 84,
+    PVRTC_2BPP_RGB = 96,
+    PVRTC_2BPP_RGBA = 97,
+    PVRTC_4BPP_RGB = 98,
+    PVRTC_4BPP_RGBA = 99,
+    ATC_RGB4_3DS = 100,
+    ATC_RGBA8_3DS = 101,
+    ETC_RGB4Crunched_3DS = 102,
+    ETC_RGBA8Crunched_3DS = 103,
+    ETC2_RGB4_3DS = 104,
+    ETC2_RGBA8_3DS = 105,
+    ETC2_RGB4_PUNCHTHROUGH_ALPHA_3DS = 106,
+    ETC2_RGBA8_PUNCHTHROUGH_ALPHA_3DS = 107,
+    EAC_R_3DS = 108,
+    EAC_R_SIGNED_3DS = 109,
+    EAC_RG_3DS = 110,
+    EAC_RG_SIGNED_3DS = 111,
+    ETC2_RGB4_UNSIGNED_3DS = 112,
+    ETC2_RGB4_SIGNED_3DS = 113,
+    ETC2_RGBA8_UNSIGNED_3DS = 114,
+    ETC2_RGBA8_SIGNED_3DS = 115,
+    ETC2_RGB4_PUNCHTHROUGH_ALPHA_UNSIGNED_3DS = 116,
+    ETC2_RGB4_PUNCHTHROUGH_ALPHA_SIGNED_3DS = 117,
+    ETC2_RGBA8_PUNCHTHROUGH_ALPHA_UNSIGNED_3DS = 118,
+    ETC2_RGBA8_PUNCHTHROUGH_ALPHA_SIGNED_3DS = 119,
+    RGBA5551 = 123,
+};
+
 //structs
-struct GradientColorKey : Il2CppObject {
+struct GradientColorKey : BNM::IL2CPP::Il2CppObject {
     static Class GetClass() {
         return Class("UnityEngine", "GradientColorKey");
     }
@@ -113,9 +213,9 @@ struct GradientColorKey : Il2CppObject {
         time = value;
     }
 };
-struct GradientAlphaKey : Il2CppObject {
+struct GradientAlphaKey : BNM::IL2CPP::Il2CppObject {
     static Class GetClass() {
-        return Class("UnityEngine") "GradientAlphaKey");
+        return Class("UnityEngine", "GradientAlphaKey");
     }
     static MonoType* GetType() {
         return GetClass().GetMonoType();
@@ -1009,6 +1109,19 @@ struct Physics{
     static Class GetClass(){
         return Class("UnityEngine", "Physics");
     }
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit* hitInfo){
+        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo"});
+        return Raycast(origin, direction, hitInfo);
+    }
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit* hitInfo, float maxDistance){
+        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance"});
+        return Raycast(origin, direction, hitInfo, maxDistance);
+    }
+    static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit* hitInfo, float maxDistance, int layerMask){
+        Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance", "layerMask"});
+        return Raycast(origin, direction, hitInfo, maxDistance, layerMask);
+    }
+
     static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo){
         Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo"});
         return Raycast(origin, direction, &hitInfo);
@@ -1029,6 +1142,83 @@ struct Physics{
     static Vector3 GetGravity(){
         Method<Vector3> get_gravity = GetClass().GetMethod("get_gravity");
         return get_gravity();
+    }
+};
+
+struct Texture2D : NamedObject {
+    static MonoType* GetType(){
+        return Class("UnityEngine", "Texture2D").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "Texture2D");
+    }
+    
+    static Texture2D* Create(int width, int height) {
+        Method<Texture2D*> Create = GetClass().GetMethod("Create", 2);
+        return Create(width, height);
+    }
+    
+    static Texture2D* Create(int width, int height, TextureFormat format) {
+        Method<Texture2D*> Create = GetClass().GetMethod("Create", 3);
+        return Create(width, height, format);
+    }
+};
+
+struct LightmapData : Object {
+    static MonoType* GetType(){
+        return Class("UnityEngine", "LightmapData").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "LightmapData");
+    }
+    
+    Texture2D* GetLightmapColor() {
+        Method<Texture2D*> get_lightmapColor = GetClass().GetMethod("get_lightmapColor");
+        return get_lightmapColor[this]();
+    }
+    
+    void SetLightmapColor(Texture2D* texture) {
+        Method<void> set_lightmapColor = GetClass().GetMethod("set_lightmapColor");
+        set_lightmapColor[this](texture);
+    }
+    
+    Texture2D* GetLightmapDir() {
+        Method<Texture2D*> get_lightmapDir = GetClass().GetMethod("get_lightmapDir");
+        return get_lightmapDir[this]();
+    }
+    
+    void SetLightmapDir(Texture2D* texture) {
+        Method<void> set_lightmapDir = GetClass().GetMethod("set_lightmapDir");
+        set_lightmapDir[this](texture);
+    }
+    
+    Texture2D* GetShadowMask() {
+        Method<Texture2D*> get_shadowMask = GetClass().GetMethod("get_shadowMask");
+        return get_shadowMask[this]();
+    }
+    
+    void SetShadowMask(Texture2D* texture) {
+        Method<void> set_shadowMask = GetClass().GetMethod("set_shadowMask");
+        set_shadowMask[this](texture);
+    }
+};
+
+struct LightmapSettings {
+    static MonoType* GetType(){
+        return Class("UnityEngine", "LightmapSettings").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("UnityEngine", "LightmapSettings");
+    }
+    
+    static Array<LightmapData*>* GetLightmaps() {
+        Method<Array<LightmapData*>*> get_lightmaps = GetClass().GetMethod("get_lightmaps");
+        return get_lightmaps();
+    }
+    
+    static void SetLightmaps(Array<LightmapData*>* lightmaps) {
+        Method<void> set_lightmaps = GetClass().GetMethod("set_lightmaps");
+        set_lightmaps(lightmaps);
     }
 };
 
