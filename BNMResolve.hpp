@@ -348,6 +348,10 @@ struct GameObject : NamedObject{
         auto CreatePrimitive = (GameObject*(*)(PrimitiveType))GetExternMethod("UnityEngine.GameObject::CreatePrimitive");
         return CreatePrimitive(primitiveType);
     }
+    static void DontDestroyOnLoad(Object* object){
+        Method<void> DontDestroyOnLoad = GetClass().GetMethod("DontDestroyOnLoad");
+        DontDestroyOnLoad(object);
+    }
 
     Array<Component*>* GetComponentsInChildren(MonoType* type){
         Method<Array<Component*>*> GetComponentsInChildren = GetClass().GetMethod("GetComponentsInChildren");
