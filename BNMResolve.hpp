@@ -307,6 +307,20 @@ struct GameObject : NamedObject{
         static auto CreatePrimitive = (GameObject*(*)(PrimitiveType))GetExternMethod("UnityEngine.GameObject::CreatePrimitive");
         return CreatePrimitive(primitiveType);
     }
+
+    static Object *Instantiate(Object* original, Vector3 position, Quaternion rotation) {
+        static Method<Object*> Instantiate = GetClass().GetMethod("Instantiate", { "original", "position", "rotation" });
+        return Instantiate(original, position, rotation); 
+    }
+    static Object* Instantiate(Object* original) {
+        static Method<Object*> Instantiate = GetClass().GetMethod("Instantiate", { "original" });
+        return Instantiate(original); 
+    }
+    static Object* Instantiate(Object* original, Transform* parent, bool instantiateInWorldSpace) {
+        static Method<Object*> Instantiate = GetClass().GetMethod("Instantiate", { "original", "parent", "instantiateInWorldSpace" });
+        return Instantiate(original, parent, instantiateInWorldSpace); 
+    }
+
     static void DontDestroyOnLoad(Object* object){
         static Method<void> DontDestroyOnLoad = GetClass().GetMethod("DontDestroyOnLoad");
         DontDestroyOnLoad(object);
