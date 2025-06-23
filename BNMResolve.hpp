@@ -186,7 +186,7 @@ enum TextureFormat
 
 //structs
 struct GradientColorKey {
-    BNM::Structures::Unity::Color color;
+    Color color;
     float time;
 };
 
@@ -206,24 +206,20 @@ struct Gradient : BNM::IL2CPP::Il2CppObject {
 
     void SetColorKeys(std::vector<GradientColorKey> keys) {
         static auto set_colorKeys = (void(*)(void*, Array<GradientColorKey>*))GetExternMethod("UnityEngine.Gradient::set_colorKeys");
-        Array<GradientColorKey>* keyArr{};
-        keyArr->CopyFrom(keys);
+        Array<GradientColorKey>* keyArr = Array<GradientColorKey>::Create(keys);
         set_colorKeys(this, keyArr);
     }
 
     void SetAlphaKeys(std::vector<GradientAlphaKey> keys) {
         static auto set_alphaKeys = (void(*)(void*, Array<GradientAlphaKey>*))GetExternMethod("UnityEngine.Gradient::set_alphaKeys");
-        Array<GradientAlphaKey>* keyArr{};
-        keyArr->CopyFrom(keys);
+        Array<GradientAlphaKey>* keyArr = Array<GradientAlphaKey>::Create(keys);
         set_alphaKeys(this, keyArr);
     }
 
     void SetKeys(std::vector<GradientColorKey> colorKeys, std::vector<GradientAlphaKey> alphaKeys) {
         static auto SetKeysMethod = (void(*)(void*, Array<GradientColorKey>*, Array<GradientAlphaKey>*))GetExternMethod("UnityEngine.Gradient::SetKeys");
-        Array<GradientColorKey>* colorKeyArray = new Array<GradientColorKey>();
-        Array<GradientAlphaKey>* alphaKeyArray = new Array<GradientAlphaKey>();
-        colorKeyArray->CopyFrom(colorKeys);
-        alphaKeyArray->CopyFrom(alphaKeys);
+        Array<GradientColorKey>* colorKeyArray = Array<GradientColorKey>::Create(colorKeys);
+        Array<GradientAlphaKey>* alphaKeyArray = Array<GradientAlphaKey>::Create(alphaKeys);
         SetKeysMethod(this, colorKeyArray, alphaKeyArray);
     }
 };
@@ -339,9 +335,9 @@ struct GameObject : NamedObject{
         static Method<Array<Component*>*> GetComponents = GetClass().GetMethod("GetComponents");
         return GetComponents[this](type);
     }
-    Component* GetComponentInParent(MonoType* type){
-        static Method<Component*> GetComponentInParent = GetClass().GetMethod("GetComponentInParent", 1);
-        return GetComponentInParent[this](type);
+    Component* GetComponentInParent(MonoType* type, bool includeInactive){
+        static auto GetComponentInParent = (Component*(*)(void*, MonoType*, bool))GetExternMethod("UnityEngine.GameObject::GetComponentInParent"); // consistently extern :(
+        return GetComponentInParent(this, type, includeInactive);
     }
     static Array<Object*>* FindObjectsOfType(MonoType * type){
         static Method<Array<Object*>*> FindObjectsOfType = GetClass().GetMethod("FindObjectsOfType", {"type"});
@@ -903,6 +899,10 @@ struct LineRenderer : Renderer{
     void SetColorGradient(Gradient* gradient) {
         static auto setColorGradient = (void(*)(void*, Gradient*))GetExternMethod("UnityEngine.LineRenderer::SetColorGradient");
         setColorGradient(this, gradient);
+    }
+    void SetPositionCount(int positionCount) {
+        static auto set_positionCount = (void(*)(void*, int))GetExternMethod("UnityEngine.LineRenderer::set_positionCount");
+        set_positionCount(this, positionCount);
     }
 };
 
