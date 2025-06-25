@@ -41,8 +41,16 @@ struct Texture2D;
 struct GradientColorKey;
 struct GradientAlphaKey;
 struct Gradient;
+struct Skybox;
+struct Sprite;
 
 //enums
+enum GradientMode
+{
+    Blend,
+    Fixed,
+    PerceptualBlend
+};
 enum RenderMode
 {
     ScreenSpaceOverlay,
@@ -84,6 +92,12 @@ enum FontStyle
     Bold,
     Italic,
     BoldAndItalic
+};
+
+enum SpriteMeshType
+{
+    FullRect,
+    Tight
 };
 
 // idk if this is correct or not
@@ -222,6 +236,31 @@ struct Gradient : BNM::IL2CPP::Il2CppObject {
         Array<GradientAlphaKey>* alphaKeyArray = Array<GradientAlphaKey>::Create(alphaKeys);
         SetKeysMethod(this, colorKeyArray, alphaKeyArray);
     }
+
+    Array<GradientColorKey>* GetColorKeys() {
+        static auto get_colorKeys = (Array<GradientColorKey>*(*)(void*))GetExternMethod("UnityEngine.Gradient::get_colorKeys");
+        return get_colorKeys(this);
+    }
+
+    Array<GradientAlphaKey>* GetAlphaKeys() {
+        static auto get_alphaKeys = (Array<GradientAlphaKey>*(*)(void*))GetExternMethod("UnityEngine.Gradient::get_alphaKeys");
+        return get_alphaKeys(this);
+    }
+
+    Color Evaluate(float time) {
+        static auto evaluate = (Color(*)(void*, float))GetExternMethod("UnityEngine.Gradient::Evaluate");
+        return evaluate(this, time);
+    }
+
+    void SetMode(GradientMode mode) {
+        static auto set_mode = (void(*)(void*, int))GetExternMethod("UnityEngine.Gradient::set_mode");
+        set_mode(this, (int)mode);
+    }
+
+    GradientMode GetMode() {
+        static auto get_mode = (int(*)(void*))GetExternMethod("UnityEngine.Gradient::get_mode");
+        return (GradientMode)get_mode(this);
+    }
 };
 struct NamedObject : Object{ // pretty much Object but for some reason BNMDev didn't add .name for it
     static Class GetClass() {
@@ -306,15 +345,15 @@ struct GameObject : NamedObject{
 
     static Object *Instantiate(Object* original, Vector3 position, Quaternion rotation) {
         static Method<Object*> Instantiate = GetClass().GetMethod("Instantiate", { "original", "position", "rotation" });
-        return Instantiate(original, position, rotation); 
+        return Instantiate(original, position, rotation);
     }
     static Object* Instantiate(Object* original) {
         static Method<Object*> Instantiate = GetClass().GetMethod("Instantiate", { "original" });
-        return Instantiate(original); 
+        return Instantiate(original);
     }
     static Object* Instantiate(Object* original, Transform* parent, bool instantiateInWorldSpace) {
         static Method<Object*> Instantiate = GetClass().GetMethod("Instantiate", { "original", "parent", "instantiateInWorldSpace" });
-        return Instantiate(original, parent, instantiateInWorldSpace); 
+        return Instantiate(original, parent, instantiateInWorldSpace);
     }
 
     static void DontDestroyOnLoad(Object* object){
@@ -1116,17 +1155,61 @@ struct AssetBundle : NamedObject{
         static Method<AssetBundle*> LoadFromFile = GetClass().GetMethod("LoadFromFile", 1);
         return LoadFromFile(CreateMonoString(path));
     }
+
+    static AssetBundle* LoadFromMemory(Array<uint8_t>* binary) {
+        static Method<AssetBundle*> LoadFromMemory = GetClass().GetMethod("LoadFromMemory", 1);
+        return LoadFromMemory(binary);
+    }
+
     void Unload(bool unloadAllLoadedObjects){
         static auto Unload = (void (*)(AssetBundle *, bool))GetExternMethod("UnityEngine.AssetBundle::Unload");
         Unload(this, unloadAllLoadedObjects);
     }
+    
     Object* LoadAsset(std::string name){
         static Method<Object*> LoadAsset = GetClass().GetMethod("LoadAsset", 1);
         return LoadAsset[this](CreateMonoString(name));
     }
+    
     Object* LoadAsset(std::string name, MonoType* type){
         static Method<Object*> LoadAsset = GetClass().GetMethod("LoadAsset", 2);
         return LoadAsset[this](CreateMonoString(name), type);
+    }
+    
+    Array<Object*>* LoadAllAssets() {
+        static Method<Array<Object*>*> LoadAllAssets = GetClass().GetMethod("LoadAllAssets");
+        return LoadAllAssets[this]();
+    }
+    
+    Array<Object*>* LoadAllAssets(MonoType* type) {
+        static Method<Array<Object*>*> LoadAllAssets = GetClass().GetMethod("LoadAllAssets", 1);
+        return LoadAllAssets[this](type);
+    }
+    
+    Array<String*>* GetAllAssetNames() {
+        static Method<Array<String*>*> GetAllAssetNames = GetClass().GetMethod("GetAllAssetNames");
+        return GetAllAssetNames[this]();
+    }
+
+    std::string GetName() {
+        static Method<String*> get_name = GetClass().GetMethod("get_name");
+        auto name = get_name[this]();
+        return name->str();
+    }
+    
+    void SetName(std::string name) {
+        static Method<void> set_name = GetClass().GetMethod("set_name");
+        set_name[this](CreateMonoString(name));
+    }
+    
+    bool GetIsStreamedSceneAssetBundle() {
+        static Method<bool> get_isStreamedSceneAssetBundle = GetClass().GetMethod("get_isStreamedSceneAssetBundle");
+        return get_isStreamedSceneAssetBundle[this]();
+    }
+    
+    static void UnloadAllAssetBundles(bool unloadAllObjects) {
+        static Method<void> UnloadAllAssetBundles = GetClass().GetMethod("UnloadAllAssetBundles", 1);
+        UnloadAllAssetBundles(unloadAllObjects);
     }
 };
 struct Physics{
@@ -1170,12 +1253,12 @@ struct Texture2D : NamedObject {
         static Class mclass = Class("UnityEngine", "Texture2D");
         return mclass;
     }
-    
+
     static Texture2D* Create(int width, int height) {
         static Method<Texture2D*> Create = GetClass().GetMethod("Create", 2);
         return Create(width, height);
     }
-    
+
     static Texture2D* Create(int width, int height, TextureFormat format) {
         static Method<Texture2D*> Create = GetClass().GetMethod("Create", 3);
         return Create(width, height, format);
@@ -1191,32 +1274,32 @@ struct LightmapData : Object {
         static Class mclass = Class("UnityEngine", "LightmapData");
         return mclass;
     }
-    
+
     Texture2D* GetLightmapColor() {
         static Method<Texture2D*> get_lightmapColor = GetClass().GetMethod("get_lightmapColor");
         return get_lightmapColor[this]();
     }
-    
+
     void SetLightmapColor(Texture2D* texture) {
         static Method<void> set_lightmapColor = GetClass().GetMethod("set_lightmapColor");
         set_lightmapColor[this](texture);
     }
-    
+
     Texture2D* GetLightmapDir() {
         static Method<Texture2D*> get_lightmapDir = GetClass().GetMethod("get_lightmapDir");
         return get_lightmapDir[this]();
     }
-    
+
     void SetLightmapDir(Texture2D* texture) {
         static Method<void> set_lightmapDir = GetClass().GetMethod("set_lightmapDir");
         set_lightmapDir[this](texture);
     }
-    
+
     Texture2D* GetShadowMask() {
         static Method<Texture2D*> get_shadowMask = GetClass().GetMethod("get_shadowMask");
         return get_shadowMask[this]();
     }
-    
+
     void SetShadowMask(Texture2D* texture) {
         static Method<void> set_shadowMask = GetClass().GetMethod("set_shadowMask");
         set_shadowMask[this](texture);
@@ -1232,12 +1315,12 @@ struct LightmapSettings {
         static Class mclass = Class("UnityEngine", "LightmapSettings");
         return mclass;
     }
-    
+
     static Array<LightmapData*>* GetLightmaps() {
         static Method<Array<LightmapData*>*> get_lightmaps = GetClass().GetMethod("get_lightmaps");
         return get_lightmaps();
     }
-    
+
     static void SetLightmaps(Array<LightmapData*>* lightmaps) {
         static Method<void> set_lightmaps = GetClass().GetMethod("set_lightmaps");
         set_lightmaps(lightmaps);
@@ -1257,5 +1340,108 @@ struct LayerMask{
     static int NameToLayer(BNM::Structures::Mono::String * name) {
         static auto nameToLayer = (int(*)(String*))GetExternMethod("UnityEngine.LayerMask::NameToLayer");
         return nameToLayer(name);
+    }
+};
+
+struct Skybox : Behaviour {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "Skybox").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "Skybox");
+        return mclass;
+    }
+
+    Material* GetMaterial() {
+        static Method<Material*> get_material = GetClass().GetMethod("get_material");
+        return get_material[this]();
+    }
+
+    void SetMaterial(Material* material) {
+        static Method<void> set_material = GetClass().GetMethod("set_material");
+        set_material[this](material);
+    }
+};
+
+struct Sprite : NamedObject {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "Sprite").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "Sprite");
+        return mclass;
+    }
+
+    static Sprite* Create(Texture2D* texture) {
+        static Method<Sprite*> Create = GetClass().GetMethod("Create", 1);
+        return Create(texture);
+    }
+
+    static Sprite* Create(Texture2D* texture, Rect rect, Vector2 pivot) {
+        static Method<Sprite*> Create = GetClass().GetMethod("Create", 3);
+        return Create(texture, rect, pivot);
+    }
+
+    static Sprite* Create(Texture2D* texture, Rect rect, Vector2 pivot, float pixelsPerUnit) {
+        static Method<Sprite*> Create = GetClass().GetMethod("Create", 4);
+        return Create(texture, rect, pivot, pixelsPerUnit);
+    }
+
+    static Sprite* Create(Texture2D* texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude) {
+        static Method<Sprite*> Create = GetClass().GetMethod("Create", 5);
+        return Create(texture, rect, pivot, pixelsPerUnit, extrude);
+    }
+
+    static Sprite* Create(Texture2D* texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude, SpriteMeshType meshType) {
+        static Method<Sprite*> Create = GetClass().GetMethod("Create", 6);
+        return Create(texture, rect, pivot, pixelsPerUnit, extrude, meshType);
+    }
+
+    static Sprite* Create(Texture2D* texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude, SpriteMeshType meshType, Vector4 border) {
+        static Method<Sprite*> Create = GetClass().GetMethod("Create", 7);
+        return Create(texture, rect, pivot, pixelsPerUnit, extrude, meshType, border);
+    }
+
+    Texture2D* GetTexture() {
+        static Method<Texture2D*> get_texture = GetClass().GetMethod("get_texture");
+        return get_texture[this]();
+    }
+
+    Rect GetRect() {
+        static Method<Rect> get_rect = GetClass().GetMethod("get_rect");
+        return get_rect[this]();
+    }
+
+    Vector2 GetPivot() {
+        static Method<Vector2> get_pivot = GetClass().GetMethod("get_pivot");
+        return get_pivot[this]();
+    }
+
+    float GetPixelsPerUnit() {
+        static Method<float> get_pixelsPerUnit = GetClass().GetMethod("get_pixelsPerUnit");
+        return get_pixelsPerUnit[this]();
+    }
+
+    Vector4 GetBorder() {
+        static Method<Vector4> get_border = GetClass().GetMethod("get_border");
+        return get_border[this]();
+    }
+
+    Vector2 GetBounds() {
+        static Method<Vector2> get_bounds = GetClass().GetMethod("get_bounds");
+        return get_bounds[this]();
+    }
+
+    std::string GetName() {
+        static Method<String*> get_name = GetClass().GetMethod("get_name");
+        auto name = get_name[this]();
+        return name->str();
+    }
+
+    void SetName(std::string name) {
+        static Method<void> set_name = GetClass().GetMethod("set_name");
+        set_name[this](CreateMonoString(name));
     }
 };
