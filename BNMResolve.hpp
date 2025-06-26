@@ -252,6 +252,7 @@ struct Gradient : BNM::IL2CPP::Il2CppObject {
         return evaluate(this, time);
     }
 
+    // not 100% sure if this works 
     void SetMode(GradientMode mode) {
         static auto set_mode = (void(*)(void*, int))GetExternMethod("UnityEngine.Gradient::set_mode");
         set_mode(this, (int)mode);
@@ -1443,5 +1444,72 @@ struct Sprite : NamedObject {
     void SetName(std::string name) {
         static Method<void> set_name = GetClass().GetMethod("set_name");
         set_name[this](CreateMonoString(name));
+    }
+};
+
+// this is base stuff someone else that is better then me can add more stuff
+struct Animator : Behaviour {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "Animator").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "Animator");
+        return mclass;
+    }
+
+    void SetEnabled(bool enabled){
+        static auto set_enabled = (void(*)(void*, bool))GetExternMethod("UnityEngine.Behaviour::set_enabled");
+        set_enabled(this, enabled);
+    }
+    bool GetEnabled(){
+        static auto get_enabled = (bool(*)(void*))GetExternMethod("UnityEngine.Behaviour::get_enabled");
+        return get_enabled(this);
+    }
+    void Play(std::string stateName) {
+        static Method<void> Play = GetClass().GetMethod("Play", 1);
+        Play[this](CreateMonoString(stateName));
+    }
+
+    void Stop() {
+        static Method<void> Stop = GetClass().GetMethod("Stop");
+        Stop[this]();
+    }
+};
+
+struct Matrix4x4 {
+    float m00, m01, m02, m03;
+    float m10, m11, m12, m13;
+    float m20, m21, m22, m23;
+    float m30, m31, m32, m33;
+
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "Matrix4x4").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "Matrix4x4");
+        return mclass;
+    }
+
+    static Matrix4x4 identity() {
+        static auto identity = (Matrix4x4(*)())GetExternMethod("UnityEngine.Matrix4x4::get_identity");
+        return identity();
+    }
+
+    static Matrix4x4 zero() {
+        static auto zero = (Matrix4x4(*)())GetExternMethod("UnityEngine.Matrix4x4::get_zero");
+        return zero();
+    }
+};
+
+struct LODGroup : Component {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "LODGroup").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "LODGroup");
+        return mclass;
     }
 };
