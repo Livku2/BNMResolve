@@ -51,7 +51,7 @@ struct AudioSource;
 struct LODGroup;
 struct Matrix4x4;
 struct Animator;
-//struct MonoBehaviour; // i get a error when i put
+struct MonoBehaviour;
 
 //enums
 enum GradientMode
@@ -609,7 +609,7 @@ struct Canvas : Behaviour{
         return get_worldCamera(this);
     }
 };
-struct UIBehavior : MonoBehaviour{
+struct UIBehavior : BNM::UnityEngine::MonoBehaviour{
     static MonoType* GetType(){
         static MonoType* type = Class("UnityEngine.EventSystems", "UIBehavior").GetMonoType();
         return type;
