@@ -329,6 +329,22 @@ struct Component : NamedObject{
         static Method<void> set_name = GetClass().GetMethod("set_name");
         set_name[this](CreateMonoString(tag));
     }
+
+    Component* GetComponent(MonoType* type) {
+        static Method<Component*> GetComponent = GetClass().GetMethod("GetComponent", 1);
+        GetComponent.SetInstance(this);
+        return GetComponent(type);
+    }
+    Component* GetComponentInChildren(MonoType* type, bool includeInactive) {
+        static Method<Component*> GetComponentInChildren = GetClass().GetMethod("GetComponentInChildren", 2);
+        GetComponentInChildren.SetInstance(this);
+        return GetComponentInChildren(type, includeInactive);
+    }
+    Component* GetComponentInParent(MonoType* type, bool includeInactive) {
+        static Method<Component*> GetComponentInParent = GetClass().GetMethod("GetComponentInParent", 2);
+        GetComponentInParent.SetInstance(this);
+        return GetComponentInParent(type, includeInactive);
+    }
 };
 struct GameObject : NamedObject{
     static MonoType* GetType(){
@@ -1044,7 +1060,7 @@ struct Collider : Component{
         static auto set_isTrigger = (void(*)(void*, bool))GetExternMethod("UnityEngine.Collider::set_isTrigger");
         set_isTrigger(this, val);
     }
-    Rigidbody* GetAttachedRigibody(){
+    Rigidbody* GetAttachedRigidbody(){
         static auto get_attachedRigidbody = (Rigidbody*(*)(void*))GetExternMethod("UnityEngine.Collider::get_attachedRigidbody");
         return get_attachedRigidbody(this);
     }
