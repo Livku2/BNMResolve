@@ -43,6 +43,15 @@ struct GradientAlphaKey;
 struct Gradient;
 struct Skybox;
 struct Sprite;
+struct QualitySettings;
+struct ParticleSystem;
+struct Light;
+struct AudioClip;
+struct AudioSource;
+struct LODGroup;
+struct Matrix4x4;
+struct Animator;
+struct MonoBehaviour;
 
 //enums
 enum GradientMode
@@ -600,7 +609,7 @@ struct Canvas : Behaviour{
         return get_worldCamera(this);
     }
 };
-struct UIBehavior : MonoBehaviour{
+struct UIBehavior : BNM::UnityEngine::MonoBehaviour{
     static MonoType* GetType(){
         static MonoType* type = Class("UnityEngine.EventSystems", "UIBehavior").GetMonoType();
         return type;
@@ -1330,6 +1339,16 @@ struct LightmapSettings {
 // Structs
 struct LayerMask{
     int m_Mask;
+    
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "LayerMask").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "LayerMask");
+        return mclass;
+    }
+    
     int GetValue() {
         return m_Mask;
     };
@@ -1443,5 +1462,303 @@ struct Sprite : NamedObject {
     void SetName(std::string name) {
         static Method<void> set_name = GetClass().GetMethod("set_name");
         set_name[this](CreateMonoString(name));
+    }
+};
+
+struct Animator : Behaviour {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "Animator").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "Animator");
+        return mclass;
+    }
+
+    void SetEnabled(bool enabled){
+        static auto set_enabled = (void(*)(void*, bool))GetExternMethod("UnityEngine.Behaviour::set_enabled");
+        set_enabled(this, enabled);
+    }
+    bool GetEnabled(){
+        static auto get_enabled = (bool(*)(void*))GetExternMethod("UnityEngine.Behaviour::get_enabled");
+        return get_enabled(this);
+    }
+    void Play(std::string stateName) {
+        static Method<void> Play = GetClass().GetMethod("Play", 1);
+        Play[this](CreateMonoString(stateName));
+    }
+
+    void Stop() {
+        static Method<void> Stop = GetClass().GetMethod("Stop");
+        Stop[this]();
+    }
+};
+
+struct Matrix4x4 {
+    float m00, m01, m02, m03;
+    float m10, m11, m12, m13;
+    float m20, m21, m22, m23;
+    float m30, m31, m32, m33;
+
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "Matrix4x4").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "Matrix4x4");
+        return mclass;
+    }
+
+    static Matrix4x4 identity() {
+        static auto identity = (Matrix4x4(*)())GetExternMethod("UnityEngine.Matrix4x4::get_identity");
+        return identity();
+    }
+
+    static Matrix4x4 zero() {
+        static auto zero = (Matrix4x4(*)())GetExternMethod("UnityEngine.Matrix4x4::get_zero");
+        return zero();
+    }
+};
+
+struct LODGroup : Component {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "LODGroup").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "LODGroup");
+        return mclass;
+    }
+};
+
+struct MonoBehaviour : Behaviour {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "MonoBehaviour").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "MonoBehaviour");
+        return mclass;
+    }
+
+    void* StartCoroutine(String* methodName) {
+        static Method<void*> StartCoroutine = GetClass().GetMethod("StartCoroutine", 1);
+        return StartCoroutine[this](methodName);
+    }
+
+    void* StartCoroutine(String* methodName, Object* value) {
+        static Method<void*> StartCoroutine = GetClass().GetMethod("StartCoroutine", 2);
+        return StartCoroutine[this](methodName, value);
+    }
+
+    void StopCoroutine(String* methodName) {
+        static Method<void> StopCoroutine = GetClass().GetMethod("StopCoroutine", 1);
+        StopCoroutine[this](methodName);
+    }
+
+    void StopCoroutine(void* routine) {
+        static Method<void> StopCoroutine = GetClass().GetMethod("StopCoroutine", 1);
+        StopCoroutine[this](routine);
+    }
+
+    void StopCoroutine(MonoType* routineType) {
+        static Method<void> StopCoroutine = GetClass().GetMethod("StopCoroutine", 1);
+        StopCoroutine[this](routineType);
+    }
+
+    void StopAllCoroutines() {
+        static Method<void> StopAllCoroutines = GetClass().GetMethod("StopAllCoroutines");
+        StopAllCoroutines[this]();
+    }
+
+    void Invoke(String* methodName, float time) {
+        static Method<void> Invoke = GetClass().GetMethod("Invoke", 2);
+        Invoke[this](methodName, time);
+    }    
+
+    void CancelInvoke() {
+        static Method<void> CancelInvoke = GetClass().GetMethod("CancelInvoke");
+        CancelInvoke[this]();
+    }
+
+    void CancelInvoke(String* methodName) {
+        static Method<void> CancelInvoke = GetClass().GetMethod("CancelInvoke", 1);
+        CancelInvoke[this](methodName);
+    }
+
+    bool IsInvoking(String* methodName) {
+        static Method<bool> IsInvoking = GetClass().GetMethod("IsInvoking", 1);
+        return IsInvoking[this](methodName);
+    }
+
+    bool IsInvoking() {
+        static Method<bool> IsInvoking = GetClass().GetMethod("IsInvoking");
+        return IsInvoking[this]();
+    }
+};
+
+struct QualitySettings {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "QualitySettings").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "QualitySettings");
+        return mclass;
+    }
+};
+
+struct AudioSource : Behaviour {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "AudioSource").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "AudioSource");
+        return mclass;
+    }
+
+    void Play() {
+        static Method<void> Play = GetClass().GetMethod("Play");
+        Play[this]();
+    }
+
+    void Play(float delay) {
+        static Method<void> Play = GetClass().GetMethod("Play", 1);
+        Play[this](delay);
+    }
+
+    void Stop() {
+        static Method<void> Stop = GetClass().GetMethod("Stop");
+        Stop[this]();
+    }
+
+    void Pause() {
+        static Method<void> Pause = GetClass().GetMethod("Pause");
+        Pause[this]();
+    }
+
+    void UnPause() {
+        static Method<void> UnPause = GetClass().GetMethod("UnPause");
+        UnPause[this]();
+    }
+
+    float GetVolume() {
+        static Method<float> get_volume = GetClass().GetMethod("get_volume");
+        return get_volume[this]();
+    }
+
+    void SetVolume(float volume) {
+        static Method<void> set_volume = GetClass().GetMethod("set_volume");
+        set_volume[this](volume);
+    }
+
+    AudioClip* GetClip() {
+        static Method<AudioClip*> get_clip = GetClass().GetMethod("get_clip");
+        return get_clip[this]();
+    }
+
+    void SetClip(AudioClip* clip) {
+        static Method<void> set_clip = GetClass().GetMethod("set_clip");
+        set_clip[this](clip);
+    }
+
+    bool GetIsPlaying() {
+        static Method<bool> get_isPlaying = GetClass().GetMethod("get_isPlaying");
+        return get_isPlaying[this]();
+    }
+
+    bool GetLoop() {
+        static Method<bool> get_loop = GetClass().GetMethod("get_loop");
+        return get_loop[this]();
+    }
+
+    void SetLoop(bool loop) {
+        static Method<void> set_loop = GetClass().GetMethod("set_loop");
+        set_loop[this](loop);
+    }
+};
+
+struct AudioClip : NamedObject {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "AudioClip").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "AudioClip");
+        return mclass;
+    }
+
+    std::string GetName() {
+        static Method<String*> get_name = GetClass().GetMethod("get_name");
+        auto name = get_name[this]();
+        return name->str();
+    }
+
+    void SetName(std::string name) {
+        static Method<void> set_name = GetClass().GetMethod("set_name");
+        set_name[this](CreateMonoString(name));
+    }
+
+    void SetData(Array<float>* data, int offsetSamples) {
+        static Method<void> SetData = GetClass().GetMethod("SetData", 2);
+        SetData[this](data, offsetSamples);
+    }
+
+    void SetData(Array<float>* data, int offsetSamples, int channel) {
+        static Method<void> SetData = GetClass().GetMethod("SetData", 3);
+        SetData[this](data, offsetSamples, channel);
+    }
+
+    bool GetData(Array<float>* data, int offsetSamples) {
+        static Method<bool> GetData = GetClass().GetMethod("GetData", 2);
+        return GetData[this](data, offsetSamples);
+    }
+
+    bool GetData(Array<float>* data, int offsetSamples, int channel) {
+        static Method<bool> GetData = GetClass().GetMethod("GetData", 3);
+        return GetData[this](data, offsetSamples, channel);
+    }
+
+    int GetSamples() {
+        static Method<int> get_samples = GetClass().GetMethod("get_samples");
+        return get_samples[this]();
+    }
+
+    int GetChannels() {
+        static Method<int> get_channels = GetClass().GetMethod("get_channels");
+        return get_channels[this]();
+    }
+
+    int GetFrequency() {
+        static Method<int> get_frequency = GetClass().GetMethod("get_frequency");
+        return get_frequency[this]();
+    }
+
+    float GetLength() {
+        static Method<float> get_length = GetClass().GetMethod("get_length");
+        return get_length[this]();
+    }
+};
+
+struct Light : Behaviour {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "Light").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "Light");
+        return mclass;
+    }
+};
+
+struct ParticleSystem : Component {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "ParticleSystem").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "ParticleSystem");
+        return mclass;
     }
 };
