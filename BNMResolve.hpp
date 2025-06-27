@@ -609,7 +609,7 @@ struct Canvas : Behaviour{
         return get_worldCamera(this);
     }
 };
-struct UIBehavior : Behavior{
+struct UIBehavior : Behaviour{
     static MonoType* GetType(){
         static MonoType* type = Class("UnityEngine.EventSystems", "UIBehavior").GetMonoType();
         return type;
