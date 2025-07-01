@@ -1922,4 +1922,8 @@ struct Application {
         static Method<void> set_targetFrameRate = GetClass().GetMethod("set_targetFrameRate");
         set_targetFrameRate(targetFrameRate);
     }
+    static void OpenUrl(std::string url) {
+        static auto openurl = (void(*)(String*))GetExternMethod("UnityEngine.Application::OpenURL");
+        openurl(CreateMonoString(url));
+    }
 };
