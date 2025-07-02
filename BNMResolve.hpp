@@ -1948,6 +1948,6 @@ struct Application {
     }
     static void Quit() {
         static Method<void> quit = GetClass().GetMethod("Quit");
-        Quit();
+        quit();
     }
 };
