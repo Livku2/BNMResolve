@@ -322,7 +322,16 @@ struct Component : NamedObject{
         static Method<void> set_tag = GetClass().GetMethod("set_tag");
         set_tag[this](CreateMonoString(tag));
     }
-
+    Transform* Find(std::string n) {
+        static Method<Transform*> Find = GetClass().GetMethod("Find", { "n" });
+        Transform* found = Find[this](CreateMonoString(n));
+        return found;
+    }
+    Transform* FindChild(int index) {
+        static auto FindChild = (Transform*(*)(void*, int))GetExternMethod("UnityEngine.Transform::FindChild");
+        Transform* found = FindChild(this, index);
+        return found;
+    }
     std::string GetName(){
         static Method<String*> get_name = GetClass().GetMethod("get_name");
         auto tag = get_name[this]();
@@ -775,6 +784,27 @@ struct SkinnedMeshRenderer : Renderer {
     }
     static MonoType* GetMonoType() {
         return GetClass().GetMonoType();
+    }
+
+    Array<Transform*>* GetBones() {
+        static auto get_bones = (Array<Transform*>*(*)(void*))GetExternMethod("UnityEngine.SkinnedMeshRenderer::get_bones");
+        return get_bones(this);
+    }
+    void SetBones(Array<Transform*>* bones) {
+        static auto set_bones = (void(*)(void*, Array<Transform*>*))GetExternMethod("UnityEngine.SkinnedMeshRenderer::set_bones");
+        return set_bones(this, bones);
+    }
+    Transform* GetRootBone() {
+        static auto get_rootBone = (Transform*(*)(void*))GetExternMethod("UnityEngine.SkinnedMeshRenderer::get_rootBone");
+        return get_rootBone(this);
+    }
+    bool GetUpdateWhenOffscreen() {
+        static auto get_updateWhenOffscreen = (bool(*)(void*))GetExternMethod("UnityEngine.SkinnedMeshRenderer::get_updateWhenOffscreen");
+        return get_updateWhenOffscreen(this);
+    }
+    void SetUpdateWhenOffscreen(bool value) {
+        static auto set_updateWhenOffscreen = (void(*)(void*, bool))GetExternMethod("UnityEngine.SkinnedMeshRenderer::set_updateWhenOffscreen");
+        set_updateWhenOffscreen(this, value);
     }
 };
 struct RectTransform : Transform{
