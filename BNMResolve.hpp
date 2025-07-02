@@ -97,7 +97,7 @@ enum ForceMode
     Impulse = 1,
     VelocityChange = 2
 };
-SkinnedMeshRenderer
+
 enum FontStyle
 {
     Normal,
@@ -601,12 +601,12 @@ struct Camera : Behaviour{
         static auto get_main = (Camera*(*)())GetExternMethod("UnityEngine.Camera::get_main");
         return get_main();
     }
-    
+
     float GetFarClipPlane() {
         static Method<float> get_farClipPlane = GetClass().GetMethod("get_farClipPlane");
         return get_farClipPlane[this]();
     }
-    
+
     void SetFarClipPlane(float value) {
         static Method<void> set_farClipPlane = GetClass().GetMethod("set_farClipPlane");
         set_farClipPlane[this](value);
@@ -764,7 +764,7 @@ struct Renderer : Component{
     }
     Array<Material*>* GetMaterialArray() {
         static auto GetMaterialArray = (Array<Material*>*(*)(void*))GetExternMethod("UnityEngine.Renderer::GetMaterialArray");
-        return get_materials(this);
+        return GetMaterialArray(this);
     }
 
 };
@@ -776,7 +776,7 @@ struct SkinnedMeshRenderer : Renderer {
     static MonoType* GetMonoType() {
         return GetClass().GetMonoType();
     }
-}
+};
 struct RectTransform : Transform{
     static MonoType* GetType(){
         static MonoType* type = Class("UnityEngine", "RectTransform").GetMonoType();
@@ -1068,12 +1068,12 @@ struct Time{
         static auto get_time = (float(*)())GetExternMethod("UnityEngine.Time::get_unscaledDeltaTime");
         return get_time();
     }
-    
+
     static float GetFixedDeltaTime() {
         static auto get_fixedDeltaTime = (float(*)())GetExternMethod("UnityEngine.Time::get_fixedDeltaTime");
         return get_fixedDeltaTime();
     }
-    
+
     static void SetFixedDeltaTime(float value) {
         static auto set_fixedDeltaTime = (void(*)(float))GetExternMethod("UnityEngine.Time::set_fixedDeltaTime");
         set_fixedDeltaTime(value);
@@ -1659,72 +1659,72 @@ struct QualitySettings {
         static Class mclass = Class("UnityEngine", "QualitySettings");
         return mclass;
     }
-    
+
     static bool GetRealtimeReflectionProbes() {
         static Method<bool> get_realtimeReflectionProbes = GetClass().GetMethod("get_realtimeReflectionProbes");
         return get_realtimeReflectionProbes();
     }
-    
+
     static void SetRealtimeReflectionProbes(bool value) {
         static Method<void> set_realtimeReflectionProbes = GetClass().GetMethod("set_realtimeReflectionProbes");
         set_realtimeReflectionProbes(value);
     }
-    
+
     static int GetAnisotropicFiltering() {
         static Method<int> get_anisotropicFiltering = GetClass().GetMethod("get_anisotropicFiltering");
         return get_anisotropicFiltering();
     }
-    
+
     static void SetAnisotropicFiltering(int value) {
         static Method<void> set_anisotropicFiltering = GetClass().GetMethod("set_anisotropicFiltering");
         set_anisotropicFiltering(value);
     }
-    
+
     static int GetVSyncCount() {
         static Method<int> get_vSyncCount = GetClass().GetMethod("get_vSyncCount");
         return get_vSyncCount();
     }
-    
+
     static void SetVSyncCount(int value) {
         static Method<void> set_vSyncCount = GetClass().GetMethod("set_vSyncCount");
         set_vSyncCount(value);
     }
-    
+
     static int GetMasterTextureLimit() {
         static Method<int> get_masterTextureLimit = GetClass().GetMethod("get_masterTextureLimit");
         return get_masterTextureLimit();
     }
-    
+
     static void SetMasterTextureLimit(int value) {
         static Method<void> set_masterTextureLimit = GetClass().GetMethod("set_masterTextureLimit");
         set_masterTextureLimit(value);
     }
-    
+
     static float GetShadowDistance() {
         static Method<float> get_shadowDistance = GetClass().GetMethod("get_shadowDistance");
         return get_shadowDistance();
     }
-    
+
     static void SetShadowDistance(float value) {
         static Method<void> set_shadowDistance = GetClass().GetMethod("set_shadowDistance");
         set_shadowDistance(value);
     }
-    
+
     static float GetLodBias() {
         static Method<float> get_lodBias = GetClass().GetMethod("get_lodBias");
         return get_lodBias();
     }
-    
+
     static void SetLodBias(float value) {
         static Method<void> set_lodBias = GetClass().GetMethod("set_lodBias");
         set_lodBias(value);
     }
-    
+
     static int GetAntiAliasing() {
         static Method<int> get_antiAliasing = GetClass().GetMethod("get_antiAliasing");
         return get_antiAliasing();
     }
-    
+
     static void SetAntiAliasing(int value) {
         static Method<void> set_antiAliasing = GetClass().GetMethod("set_antiAliasing");
         set_antiAliasing(value);
@@ -1873,12 +1873,12 @@ struct Light : Behaviour {
         static Class mclass = Class("UnityEngine", "Light");
         return mclass;
     }
-    
+
     int GetShadows() {
         static Method<int> get_shadows = GetClass().GetMethod("get_shadows");
         return get_shadows[this]();
     }
-    
+
     void SetShadows(int value) {
         static Method<void> set_shadows = GetClass().GetMethod("set_shadows");
         set_shadows[this](value);
@@ -1894,24 +1894,24 @@ struct ParticleSystem : Component {
         static Class mclass = Class("UnityEngine", "ParticleSystem");
         return mclass;
     }
-    
+
     struct EmissionModule {
         static Class GetClass() {
             static Class mclass = Class("UnityEngine", "ParticleSystem+EmissionModule");
             return mclass;
         }
-        
+
         float GetRateOverTimeMultiplier() {
             static Method<float> get_rateOverTimeMultiplier = GetClass().GetMethod("get_rateOverTimeMultiplier");
             return get_rateOverTimeMultiplier[this]();
         }
-        
+
         void SetRateOverTimeMultiplier(float value) {
             static Method<void> set_rateOverTimeMultiplier = GetClass().GetMethod("set_rateOverTimeMultiplier");
             set_rateOverTimeMultiplier[this](value);
         }
     };
-    
+
     EmissionModule GetEmission() {
         static Method<EmissionModule> get_emission = GetClass().GetMethod("get_emission");
         return get_emission[this]();
@@ -1931,7 +1931,7 @@ struct Application {
 
     static std::string GetIdentifier() {
         static auto get_idientifier = (String*(*)())GetExternMethod("UnityEngine.Application::get_identifier");
-        String* id = get_identifier();
+        String* id = get_idientifier();
         return id->str();
     }
     static int GetTargetFrameRate() {
