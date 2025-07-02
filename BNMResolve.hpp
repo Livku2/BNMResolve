@@ -54,6 +54,7 @@ struct Matrix4x4;
 struct Animator;
 struct MonoBehaviour;
 struct Application;
+struct SkinnedMeshRenderer;
 
 //enums
 enum GradientMode
@@ -96,7 +97,7 @@ enum ForceMode
     Impulse = 1,
     VelocityChange = 2
 };
-
+SkinnedMeshRenderer
 enum FontStyle
 {
     Normal,
@@ -761,7 +762,21 @@ struct Renderer : Component{
         static auto setMaterial = (void(*)(void*, Material*)) GetExternMethod("UnityEngine.Renderer::SetMaterial");
         setMaterial(this, material);
     }
+    Array<Material*>* GetMaterialArray() {
+        static auto GetMaterialArray = (Array<Material*>*(*)(void*))GetExternMethod("UnityEngine.Renderer::GetMaterialArray");
+        return get_materials(this);
+    }
+
 };
+struct SkinnedMeshRenderer : Renderer {
+    static Class GetClass() {
+        static Class mclass = Class("UnityEngine", "SkinnedMeshRenderer");
+        return mclass;
+    }
+    static MonoType* GetMonoType() {
+        return GetClass().GetMonoType();
+    }
+}
 struct RectTransform : Transform{
     static MonoType* GetType(){
         static MonoType* type = Class("UnityEngine", "RectTransform").GetMonoType();
@@ -1912,12 +1927,17 @@ struct Application {
         static Class mclass = Class("UnityEngine", "Application");
         return mclass;
     }
-    
+
+
+    static std::string GetIdentifier() {
+        static auto get_idientifier = (String*(*)())GetExternMethod("UnityEngine.Application::get_identifier");
+        String* id = get_identifier();
+        return id->str();
+    }
     static int GetTargetFrameRate() {
         static Method<int> get_targetFrameRate = GetClass().GetMethod("get_targetFrameRate");
         return get_targetFrameRate();
     }
-    
     static void SetTargetFrameRate(int targetFrameRate) {
         static Method<void> set_targetFrameRate = GetClass().GetMethod("set_targetFrameRate");
         set_targetFrameRate(targetFrameRate);
@@ -1925,5 +1945,9 @@ struct Application {
     static void OpenUrl(std::string url) {
         static auto openurl = (void(*)(String*))GetExternMethod("UnityEngine.Application::OpenURL");
         openurl(CreateMonoString(url));
+    }
+    static void Quit() {
+        static Method<void> quit = GetClass().GetMethod("Quit");
+        Quit();
     }
 };
