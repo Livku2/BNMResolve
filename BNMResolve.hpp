@@ -764,7 +764,7 @@ struct Renderer : Component{
     }
 
     void SetEnabled(bool value) {
-        static auto set_enabled = (bool(*)(void*, bool))GetExternMethod("UnityEngine.Renderer::set_enabled");
+        static auto set_enabled = (void(*)(void*, bool))GetExternMethod("UnityEngine.Renderer::set_enabled");
         set_enabled(this, value);
     }
     bool GetEnabled() {
