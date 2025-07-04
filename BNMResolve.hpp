@@ -763,6 +763,15 @@ struct Renderer : Component{
         return mclass;
     }
 
+    void SetEnabled(bool value) {
+        static auto set_enabled = (bool(*)(void*, bool))GetExternMethod("UnityEngine.Renderer::set_enabled");
+        set_enabled(this, value);
+    }
+    bool GetEnabled() {
+        static auto get_enabled = (bool(*)(void*))GetExternMethod("UnityEngine.Renderer::get_enabled");
+        return get_enabled(this);
+    }
+
     Material* GetMaterial(){
         static auto getMaterial = (Material*(*)(void*)) GetExternMethod("UnityEngine.Renderer::GetMaterial");
         return getMaterial(this);
