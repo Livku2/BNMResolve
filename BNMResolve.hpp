@@ -1990,3 +1990,150 @@ struct Application {
         quit();
     }
 };
+
+struct DownloadHandler : Object {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine.Networking", "DownloadHandler").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine.Networking", "DownloadHandler");
+        return mclass;
+    }
+
+    bool GetIsDone() {
+        static Method<bool> get_isDone = GetClass().GetMethod("get_isDone");
+        return get_isDone[this]();
+    }
+
+    Array<uint8_t>* GetData() {
+        static Method<Array<uint8_t>*> get_data = GetClass().GetMethod("get_data");
+        return get_data[this]();
+    }
+
+    std::string GetText() {
+        static Method<String*> get_text = GetClass().GetMethod("get_text");
+        String* text = get_text[this]();
+        return text->str();
+    }
+
+    bool GetHasError() {
+        static Method<bool> get_hasError = GetClass().GetMethod("get_hasError");
+        return get_hasError[this]();
+    }
+
+    std::string GetError() {
+        static Method<String*> get_error = GetClass().GetMethod("get_error");
+        String* error = get_error[this]();
+        return error->str();
+    }
+
+    void Dispose() {
+        static Method<void> Dispose = GetClass().GetMethod("Dispose");
+        Dispose[this]();
+    }
+};
+
+struct UnityWebRequest : Object {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine.Networking", "UnityWebRequest").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine.Networking", "UnityWebRequest");
+        return mclass;
+    }
+
+    static UnityWebRequest* Get(std::string uri) {
+        static Method<UnityWebRequest*> Get = GetClass().GetMethod("Get", 1);
+        return Get(CreateMonoString(uri));
+    }
+
+    static UnityWebRequest* Post(std::string uri, std::string postData) {
+        static Method<UnityWebRequest*> Post = GetClass().GetMethod("Post", 2);
+        return Post(CreateMonoString(uri), CreateMonoString(postData));
+    }
+
+    static UnityWebRequest* Put(std::string uri, Array<uint8_t>* bodyData) {
+        static Method<UnityWebRequest*> Put = GetClass().GetMethod("Put", 2);
+        return Put(CreateMonoString(uri), bodyData);
+    }
+
+    static UnityWebRequest* Delete(std::string uri) {
+        static Method<UnityWebRequest*> Delete = GetClass().GetMethod("Delete", 1);
+        return Delete(CreateMonoString(uri));
+    }
+
+    void SetDownloadHandler(DownloadHandler* downloadHandler) {
+        static Method<void> set_downloadHandler = GetClass().GetMethod("set_downloadHandler");
+        set_downloadHandler[this](downloadHandler);
+    }
+
+    DownloadHandler* GetDownloadHandler() {
+        static Method<DownloadHandler*> get_downloadHandler = GetClass().GetMethod("get_downloadHandler");
+        return get_downloadHandler[this]();
+    }
+
+    void SetUrl(std::string url) {
+        static Method<void> set_url = GetClass().GetMethod("set_url");
+        set_url[this](CreateMonoString(url));
+    }
+
+    std::string GetUrl() {
+        static Method<String*> get_url = GetClass().GetMethod("get_url");
+        String* url = get_url[this]();
+        return url->str();
+    }
+
+    void SetMethod(std::string method) {
+        static Method<void> set_method = GetClass().GetMethod("set_method");
+        set_method[this](CreateMonoString(method));
+    }
+
+    std::string GetMethod() {
+        static Method<String*> get_method = GetClass().GetMethod("get_method");
+        String* method = get_method[this]();
+        return method->str();
+    }
+
+    bool GetIsDone() {
+        static Method<bool> get_isDone = GetClass().GetMethod("get_isDone");
+        return get_isDone[this]();
+    }
+
+    bool GetHasError() {
+        static Method<bool> get_hasError = GetClass().GetMethod("get_hasError");
+        return get_hasError[this]();
+    }
+
+    std::string GetError() {
+        static Method<String*> get_error = GetClass().GetMethod("get_error");
+        String* error = get_error[this]();
+        return error->str();
+    }
+
+    long GetResponseCode() {
+        static Method<long> get_responseCode = GetClass().GetMethod("get_responseCode");
+        return get_responseCode[this]();
+    }
+
+    void SetRequestHeader(std::string name, std::string value) {
+        static Method<void> SetRequestHeader = GetClass().GetMethod("SetRequestHeader", 2);
+        SetRequestHeader[this](CreateMonoString(name), CreateMonoString(value));
+    }
+
+    void SendWebRequest() {
+        static Method<void> SendWebRequest = GetClass().GetMethod("SendWebRequest");
+        SendWebRequest[this]();
+    }
+
+    void Abort() {
+        static Method<void> Abort = GetClass().GetMethod("Abort");
+        Abort[this]();
+    }
+
+    void Dispose() {
+        static Method<void> Dispose = GetClass().GetMethod("Dispose");
+        Dispose[this]();
+    }
+};
