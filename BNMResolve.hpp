@@ -1903,6 +1903,84 @@ struct AudioClip : NamedObject {
     }
 };
 
+struct PlayerPrefs {
+    static MonoType* GetType(){
+        static MonoType* type = Class("UnityEngine", "PlayerPrefs").GetMonoType();
+        return type;
+    }
+    static Class GetClass(){
+        static Class mclass = Class("UnityEngine", "PlayerPrefs");
+        return mclass;
+    }
+
+    static void SetInt(std::string key, int value) {
+        static Method<void> SetInt = GetClass().GetMethod("SetInt", 2);
+        SetInt(CreateMonoString(key), value);
+    }
+
+    static int GetInt(std::string key, int defaultValue = 0) {
+        static Method<int> GetInt = GetClass().GetMethod("GetInt", 2);
+        return GetInt(CreateMonoString(key), defaultValue);
+    }
+
+    static int GetInt(std::string key) {
+        static Method<int> GetInt = GetClass().GetMethod("GetInt", 1);
+        return GetInt(CreateMonoString(key));
+    }
+
+    static void SetString(std::string key, std::string value) {
+        static Method<void> SetString = GetClass().GetMethod("SetString", 2);
+        SetString(CreateMonoString(key), CreateMonoString(value));
+    }
+
+    static std::string GetString(std::string key, std::string defaultValue = "") {
+        static Method<String*> GetString = GetClass().GetMethod("GetString", 2);
+        String* result = GetString(CreateMonoString(key), CreateMonoString(defaultValue));
+        return result->str();
+    }
+
+    static std::string GetString(std::string key) {
+        static Method<String*> GetString = GetClass().GetMethod("GetString", 1);
+        String* result = GetString(CreateMonoString(key));
+        return result->str();
+    }
+
+    static void SetFloat(std::string key, float value) {
+        static Method<void> SetFloat = GetClass().GetMethod("SetFloat", 2);
+        SetFloat(CreateMonoString(key), value);
+    }
+
+    static float GetFloat(std::string key, float defaultValue = 0.0f) {
+        static Method<float> GetFloat = GetClass().GetMethod("GetFloat", 2);
+        return GetFloat(CreateMonoString(key), defaultValue);
+    }
+
+    static float GetFloat(std::string key) {
+        static Method<float> GetFloat = GetClass().GetMethod("GetFloat", 1);
+        return GetFloat(CreateMonoString(key));
+    }
+
+    static bool HasKey(std::string key) {
+        static Method<bool> HasKey = GetClass().GetMethod("HasKey", 1);
+        return HasKey(CreateMonoString(key));
+    }
+
+    static void DeleteKey(std::string key) {
+        static Method<void> DeleteKey = GetClass().GetMethod("DeleteKey", 1);
+        DeleteKey(CreateMonoString(key));
+    }
+
+    static void DeleteAll() {
+        static Method<void> DeleteAll = GetClass().GetMethod("DeleteAll");
+        DeleteAll();
+    }
+
+    static void Save() {
+        static Method<void> Save = GetClass().GetMethod("Save");
+        Save();
+    }
+};
+
 struct Light : Behaviour {
     static MonoType* GetType(){
         static MonoType* type = Class("UnityEngine", "Light").GetMonoType();
