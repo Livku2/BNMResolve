@@ -55,6 +55,7 @@ struct Animator;
 struct MonoBehaviour;
 struct Application;
 struct SkinnedMeshRenderer;
+struct DownloadHandlerTexture;
 
 //enums
 enum GradientMode
@@ -2112,6 +2113,23 @@ struct DownloadHandler : Object {
     }
 };
 
+struct DownloadHandlerTexture : DownloadHandler {
+    static Class GetClass() {
+        static Class mclass = Class("UnityEngine.Networking", "DownloadHandlerTexture");
+        return mclass;
+    }
+
+    Texture2D* GetTexture() {
+        static Method<Texture2D*> getTexture = GetClass().GetMethod("get_texture", 0);
+        return getTexture(this);
+    }
+
+    static Texture2D* GetContent(UnityWebRequest* www) {
+        static Method<Texture2D*> getContent = GetClass().GetMethod("GetContent", 1);
+        return getContent(www);
+    }
+};
+
 struct UnityWebRequest : Object {
     static MonoType* GetType(){
         static MonoType* type = Class("UnityEngine.Networking", "UnityWebRequest").GetMonoType();
@@ -2166,6 +2184,16 @@ struct UnityWebRequest : Object {
     void SetMethod(std::string method) {
         static Method<void> set_method = GetClass().GetMethod("set_method");
         set_method[this](CreateMonoString(method));
+    }
+
+    static UnityWebRequest* GetTexture(std::string url, bool nonReadable = false) {
+        static Class uwrt = Class("UnityEngine.Networking", "UnityWebRequestTexture");
+        static Method<UnityWebRequest*> getTex = uwrt.GetMethod("GetTexture", 2);
+        return getTex(CreateMonoString(url), nonReadable);
+    }
+
+    static UnityWebRequest* GetTexture(std::string url) {
+        return GetTexture(url, false);
     }
 
     std::string GetMethod() {
