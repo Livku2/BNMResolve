@@ -24,6 +24,7 @@ struct RectTransform;
 struct Graphic;
 struct MaskableGraphic;
 struct Text;
+struct UnityWebRequest;
 struct Font;
 struct LineRenderer;
 struct Rigidbody;
