@@ -56,6 +56,9 @@ struct MonoBehaviour;
 struct Application;
 struct SkinnedMeshRenderer;
 struct DownloadHandlerTexture;
+struct GL;
+struct TextMeshPro;
+struct TMP_Text;
 
 //enums
 enum GradientMode
@@ -2241,5 +2244,88 @@ struct UnityWebRequest : Object {
     void Dispose() {
         static Method<void> Dispose = GetClass().GetMethod("Dispose");
         Dispose[this]();
+    }
+};
+
+struct GL{
+    static MonoType* GetType(){
+        return Class("UnityEngine", "GL").GetMonoType();
+    }
+    static Class GetClass() {
+        return Class("UnityEngine", "GL");
+    }
+
+    static void Begin(int mode){
+        static Method<void> Begin = GetClass().GetMethod("Begin");
+        Begin(mode);
+    }
+    static void End(){
+        static Method<void> End = GetClass().GetMethod("End");
+        End();
+    }
+    static void Color(Color color){
+        static Method<void> Color = GetClass().GetMethod("Color");
+        Color(color);
+    }
+    static void Vertex3(float x, float y, float z){
+        static Method<void> Vertex3 = GetClass().GetMethod("Vertex3");
+        Vertex3(x,y,z);
+    }
+    static void Vertex(Vector3 vector3){
+        Vertex3(vector3.x, vector3.y, vector3.z);
+    }
+    static void PushMatrix(){
+        static Method<void> PushMatrix = GetClass().GetMethod("PushMatrix");
+        PushMatrix();
+    }
+    static void PopMatrix(){
+        static Method<void> PopMatrix = GetClass().GetMethod("PopMatrix");
+        PopMatrix();
+    }
+
+};
+struct TMP_Text : MaskableGraphic{
+    static MonoType* GetType(){
+        return Class("TMPro", "TMP_Text").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("TMPro", "TMP_Text");
+    }
+    std::string GetText(){
+        static Method<String*> get_text = GetClass().GetMethod("get_text");
+        auto str = get_text[this]();
+        return str->str();
+    }
+    void SetText(std::string text){
+        static Method<void> set_text = GetClass().GetMethod("set_text");
+        set_text[this](CreateMonoString(text));
+    }
+    float GetFontSize(){
+        static Method<float> get_fontSize = GetClass().GetMethod("get_fontSize");
+        return get_fontSize[this]();
+    }
+    void SetFontSize(float size){
+        static Method<void> set_fontSize = GetClass().GetMethod("set_fontSize");
+        set_fontSize[this](size);
+    }
+    TextAlignmentOptions GetAlignment(){
+        static Method<TextAlignmentOptions> get_alignment = GetClass().GetMethod("get_alignment");
+        return get_alignment[this]();
+    }
+    void SetAlignment(TextAlignmentOptions alignment){
+        static Method<void> set_alignment = GetClass().GetMethod("set_alignment");
+        set_alignment[this](alignment);
+    }
+    void SetEnableAutoSizing(bool value){
+        static Method<void> set_enableAutoSizing = GetClass().GetMethod("set_enableAutoSizing");
+        return set_enableAutoSizing[this](value);
+    }
+};
+struct TextMeshPro : TMP_Text{
+    static MonoType* GetType(){
+        return Class("TMPro", "TextMeshPro").GetMonoType();
+    }
+    static Class GetClass(){
+        return Class("TMPro", "TextMeshPro");
     }
 };
