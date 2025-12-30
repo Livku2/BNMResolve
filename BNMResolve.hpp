@@ -61,7 +61,6 @@ struct GL;
 struct TextMeshPro;
 struct TMP_Text;
 
-//enums
 enum GradientMode
 {
     Blend,
@@ -103,9 +102,9 @@ enum TextAlignmentOptions
     TopJustified = 264,
     TopFlush = 272,
     TopGeoAligned = 288,
-    Left = 513,
+    LLeft = 513,
     Center = 514,
-    Right = 516,
+    RRight = 516,
     Justified = 520,
     Flush = 528,
     CenterGeoAligned = 544,
@@ -158,7 +157,6 @@ enum SpriteMeshType
     Tight
 };
 
-// idk if this is correct or not
 enum TextureFormat
 {
     Alpha8 = 1,
@@ -256,7 +254,6 @@ enum TextureFormat
     RGBA5551 = 123,
 };
 
-//structs
 struct GradientColorKey {
     Color color;
     float time;
@@ -279,48 +276,89 @@ struct Gradient : BNM::IL2CPP::Il2CppObject {
     void SetColorKeys(std::vector<GradientColorKey> keys) {
         static auto set_colorKeys = (void(*)(void*, Array<GradientColorKey>*))GetExternMethod("UnityEngine.Gradient::set_colorKeys");
         Array<GradientColorKey>* keyArr = Array<GradientColorKey>::Create(keys);
-        set_colorKeys(this, keyArr);
+        if (set_colorKeys) {
+            set_colorKeys(this, keyArr);
+        } else {
+            static Method<void> set_colorKeysM = GetClass().GetMethod("set_colorKeys");
+            set_colorKeysM[this](keyArr);
+        }
     }
 
     void SetAlphaKeys(std::vector<GradientAlphaKey> keys) {
         static auto set_alphaKeys = (void(*)(void*, Array<GradientAlphaKey>*))GetExternMethod("UnityEngine.Gradient::set_alphaKeys");
         Array<GradientAlphaKey>* keyArr = Array<GradientAlphaKey>::Create(keys);
-        set_alphaKeys(this, keyArr);
+        if (set_alphaKeys) {
+            set_alphaKeys(this, keyArr);
+        } else {
+            static Method<void> set_alphaKeysM = GetClass().GetMethod("set_alphaKeys");
+            set_alphaKeysM[this](keyArr);
+        }
     }
 
     void SetKeys(std::vector<GradientColorKey> colorKeys, std::vector<GradientAlphaKey> alphaKeys) {
         static auto SetKeysMethod = (void(*)(void*, Array<GradientColorKey>*, Array<GradientAlphaKey>*))GetExternMethod("UnityEngine.Gradient::SetKeys");
         Array<GradientColorKey>* colorKeyArray = Array<GradientColorKey>::Create(colorKeys);
         Array<GradientAlphaKey>* alphaKeyArray = Array<GradientAlphaKey>::Create(alphaKeys);
-        SetKeysMethod(this, colorKeyArray, alphaKeyArray);
+        if (SetKeysMethod) {
+            SetKeysMethod(this, colorKeyArray, alphaKeyArray);
+        } else {
+            static Method<void> SetKeysM = GetClass().GetMethod("SetKeys", 2);
+            SetKeysM[this](colorKeyArray, alphaKeyArray);
+        }
     }
 
     Array<GradientColorKey>* GetColorKeys() {
         static auto get_colorKeys = (Array<GradientColorKey>*(*)(void*))GetExternMethod("UnityEngine.Gradient::get_colorKeys");
-        return get_colorKeys(this);
+        if (get_colorKeys) {
+            return get_colorKeys(this);
+        } else {
+            static Method<Array<GradientColorKey>*> get_colorKeysM = GetClass().GetMethod("get_colorKeys");
+            return get_colorKeysM[this]();
+        }
     }
 
     Array<GradientAlphaKey>* GetAlphaKeys() {
         static auto get_alphaKeys = (Array<GradientAlphaKey>*(*)(void*))GetExternMethod("UnityEngine.Gradient::get_alphaKeys");
-        return get_alphaKeys(this);
+        if (get_alphaKeys) {
+            return get_alphaKeys(this);
+        } else {
+            static Method<Array<GradientAlphaKey>*> get_alphaKeysM = GetClass().GetMethod("get_alphaKeys");
+            return get_alphaKeysM[this]();
+        }
     }
 
     Color Evaluate(float time) {
         static auto evaluate = (Color(*)(void*, float))GetExternMethod("UnityEngine.Gradient::Evaluate");
-        return evaluate(this, time);
+        if (evaluate) {
+            return evaluate(this, time);
+        } else {
+            static Method<Color> evaluateM = GetClass().GetMethod("Evaluate");
+            return evaluateM[this](time);
+        }
     }
 
     void SetMode(GradientMode mode) {
         static auto set_mode = (void(*)(void*, int))GetExternMethod("UnityEngine.Gradient::set_mode");
-        set_mode(this, (int)mode);
+        if (set_mode) {
+            set_mode(this, (int)mode);
+        } else {
+            static Method<void> set_modeM = GetClass().GetMethod("set_mode");
+            set_modeM[this]((int)mode);
+        }
     }
 
     GradientMode GetMode() {
         static auto get_mode = (int(*)(void*))GetExternMethod("UnityEngine.Gradient::get_mode");
-        return (GradientMode)get_mode(this);
+        if (get_mode) {
+            return (GradientMode)get_mode(this);
+        } else {
+            static Method<int> get_modeM = GetClass().GetMethod("get_mode");
+            return (GradientMode)get_modeM[this]();
+        }
     }
 };
-struct NamedObject : Object{ // pretty much Object but for some reason BNMDev didn't add .name for it
+
+struct NamedObject : Object{
     static Class GetClass() {
         static Class mclass = Class("UnityEngine", "Object");
         return mclass;
@@ -331,13 +369,19 @@ struct NamedObject : Object{ // pretty much Object but for some reason BNMDev di
     }
 
     std::string GetName() {
-        static Method<String*> get_name = GetClass().GetMethod("get_name");
-        String* name = get_name[this]();
-        return name->str();
+        static auto get_name = (String*(*)(void*))GetExternMethod("UnityEngine.Object::get_name");
+        if (get_name) return get_name(this)->str();
+        static Method<String*> get_name_m = GetClass().GetMethod("get_name");
+        return get_name_m[this]()->str();
     }
     void SetName(std::string name) {
-        static Method<void> set_name = GetClass().GetMethod("set_name", 1);
-        set_name[this](CreateMonoString(name));
+        static auto set_name = (void(*)(void*, String*))GetExternMethod("UnityEngine.Object::set_name");
+        if (set_name) {
+            set_name(this, CreateMonoString(name));
+        } else {
+            static Method<void> set_name_m = GetClass().GetMethod("set_name", 1);
+            set_name_m[this](CreateMonoString(name));
+        }
     }
 };
 
@@ -353,55 +397,76 @@ struct Component : NamedObject{
 
     Transform* GetTransform(){
         static auto get_transform = (Transform*(*)(void*))GetExternMethod("UnityEngine.Component::get_transform");
-        return get_transform(this);
+        if (get_transform) return get_transform(this);
+        static Method<Transform*> get_transform_m = GetClass().GetMethod("get_transform");
+        return get_transform_m[this]();
     }
     GameObject* GetGameObject(){
         static auto get_gameObject = (GameObject*(*)(void*))GetExternMethod("UnityEngine.Component::get_gameObject");
-        return get_gameObject(this);
+        if (get_gameObject) return get_gameObject(this);
+        static Method<GameObject*> get_gameObject_m = GetClass().GetMethod("get_gameObject");
+        return get_gameObject_m[this]();
     }
     std::string GetTag(){
-        static Method<String*> get_tag = GetClass().GetMethod("get_tag");
-        auto tag = get_tag[this]();
-        return tag->str();
+        static auto get_tag = (String*(*)(void*))GetExternMethod("UnityEngine.Component::get_tag");
+        if (get_tag) return get_tag(this)->str();
+        static Method<String*> get_tag_m = GetClass().GetMethod("get_tag");
+        return get_tag_m[this]()->str();
     }
     void SetTag(std::string tag){
-        static Method<void> set_tag = GetClass().GetMethod("set_tag");
-        set_tag[this](CreateMonoString(tag));
+        static auto set_tag = (void(*)(void*, String*))GetExternMethod("UnityEngine.Component::set_tag");
+        if (set_tag) {
+            set_tag(this, CreateMonoString(tag));
+        } else {
+            static Method<void> set_tag_m = GetClass().GetMethod("set_tag");
+            set_tag_m[this](CreateMonoString(tag));
+        }
     }
     Transform* Find(std::string n) {
-        static Method<Transform*> Find = GetClass().GetMethod("Find", { "n" });
-        Transform* found = Find[this](CreateMonoString(n));
-        return found;
+        static auto Find = (Transform*(*)(void*, String*))GetExternMethod("UnityEngine.Transform::Find");
+        if (Find) return Find(this, CreateMonoString(n));
+        static Method<Transform*> FindM = GetClass().GetMethod("Find", { "n" });
+        return FindM[this](CreateMonoString(n));
     }
     Transform* FindChild(int index) {
         static auto FindChild = (Transform*(*)(void*, int))GetExternMethod("UnityEngine.Transform::FindChild");
-        Transform* found = FindChild(this, index);
-        return found;
+        if (FindChild) return FindChild(this, index);
+        static Method<Transform*> FindChildM = GetClass().GetMethod("FindChild", 1);
+        return FindChildM[this](index);
     }
     std::string GetName(){
-        static Method<String*> get_name = GetClass().GetMethod("get_name");
-        auto tag = get_name[this]();
-        return tag->str();
+        static auto get_name = (String*(*)(void*))GetExternMethod("UnityEngine.Object::get_name");
+        if (get_name) return get_name(this)->str();
+        static Method<String*> get_name_m = GetClass().GetMethod("get_name");
+        return get_name_m[this]()->str();
     }
     void SetName(std::string tag){
-        static Method<void> set_name = GetClass().GetMethod("set_name");
-        set_name[this](CreateMonoString(tag));
+        static auto set_name = (void(*)(void*, String*))GetExternMethod("UnityEngine.Object::set_name");
+        if (set_name) {
+            set_name(this, CreateMonoString(tag));
+        } else {
+            static Method<void> set_name_m = GetClass().GetMethod("set_name");
+            set_name_m[this](CreateMonoString(tag));
+        }
     }
 
     Component* GetComponent(MonoType* type) {
-        static Method<Component*> GetComponent = GetClass().GetMethod("GetComponent", 1);
-        GetComponent.SetInstance(this);
-        return GetComponent(type);
+        static auto GetComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.Component::GetComponent");
+        if (GetComponent) return GetComponent(this, type);
+        static Method<Component*> GetComponentM = GetClass().GetMethod("GetComponent", 1);
+        return GetComponentM[this](type);
     }
     Component* GetComponentInChildren(MonoType* type, bool includeInactive) {
-        static Method<Component*> GetComponentInChildren = GetClass().GetMethod("GetComponentInChildren", 2);
-        GetComponentInChildren.SetInstance(this);
-        return GetComponentInChildren(type, includeInactive);
+        static auto GetComponentInChildren = (Component*(*)(void*, MonoType*, bool))GetExternMethod("UnityEngine.Component::GetComponentInChildren");
+        if (GetComponentInChildren) return GetComponentInChildren(this, type, includeInactive);
+        static Method<Component*> GetComponentInChildrenM = GetClass().GetMethod("GetComponentInChildren", 2);
+        return GetComponentInChildrenM[this](type, includeInactive);
     }
     Component* GetComponentInParent(MonoType* type, bool includeInactive) {
-        static Method<Component*> GetComponentInParent = GetClass().GetMethod("GetComponentInParent", 2);
-        GetComponentInParent.SetInstance(this);
-        return GetComponentInParent(type, includeInactive);
+        static auto GetComponentInParent = (Component*(*)(void*, MonoType*, bool))GetExternMethod("UnityEngine.Component::GetComponentInParent");
+        if (GetComponentInParent) return GetComponentInParent(this, type, includeInactive);
+        static Method<Component*> GetComponentInParentM = GetClass().GetMethod("GetComponentInParent", 2);
+        return GetComponentInParentM[this](type, includeInactive);
     }
 };
 struct GameObject : NamedObject{
@@ -414,111 +479,180 @@ struct GameObject : NamedObject{
         return mclass;
     }
     static void Destroy(Object* obj){
-        static Method<void> Destroy = Class("UnityEngine", "Object").GetMethod("Destroy", 1);
-        Destroy(obj);
+        static auto Destroy = (void(*)(Object*))GetExternMethod("UnityEngine.Object::Destroy");
+        if (Destroy) {
+            Destroy(obj);
+        } else {
+            static Method<void> DestroyM = Class("UnityEngine", "Object").GetMethod("Destroy", 1);
+            DestroyM(obj);
+        }
     }
     static void Destroy(Object* obj, float t) {
-        static Method<void> Destroy = Class("UnityEngine", "Object").GetMethod("Destroy", 2);
-        Destroy(obj, t);
+        static auto Destroy = (void(*)(Object*, float))GetExternMethod("UnityEngine.Object::Destroy");
+        if (Destroy) {
+            Destroy(obj, t);
+        } else {
+            static Method<void> DestroyM = Class("UnityEngine", "Object").GetMethod("Destroy", 2);
+            DestroyM(obj, t);
+        }
     }
     static GameObject *CreatePrimitive(PrimitiveType primitiveType){
         static auto CreatePrimitive = (GameObject*(*)(PrimitiveType))GetExternMethod("UnityEngine.GameObject::CreatePrimitive");
-        return CreatePrimitive(primitiveType);
+        if (CreatePrimitive) return CreatePrimitive(primitiveType);
+        static Method<GameObject*> CreatePrimitiveM = GetClass().GetMethod("CreatePrimitive");
+        return CreatePrimitiveM(primitiveType);
     }
 
     static Object *Instantiate(Object* original, Vector3 position, Quaternion rotation) {
-        static Method<Object*> Instantiate = GetClass().GetMethod("Instantiate", { "original", "position", "rotation" });
-        return Instantiate(original, position, rotation);
+        static auto Instantiate = (Object*(*)(Object*, Vector3, Quaternion))GetExternMethod("UnityEngine.Object::Instantiate");
+        if (Instantiate) return Instantiate(original, position, rotation);
+        static Method<Object*> InstantiateM = GetClass().GetMethod("Instantiate", { "original", "position", "rotation" });
+        return InstantiateM(original, position, rotation);
     }
     static Object* Instantiate(Object* original) {
-        static Method<Object*> Instantiate = GetClass().GetMethod("Instantiate", { "original" });
-        return Instantiate(original);
+        static auto Instantiate = (Object*(*)(Object*))GetExternMethod("UnityEngine.Object::Instantiate");
+        if (Instantiate) return Instantiate(original);
+        static Method<Object*> InstantiateM = GetClass().GetMethod("Instantiate", { "original" });
+        return InstantiateM(original);
     }
     static Object* Instantiate(Object* original, Transform* parent, bool instantiateInWorldSpace) {
-        static Method<Object*> Instantiate = GetClass().GetMethod("Instantiate", { "original", "parent", "instantiateInWorldSpace" });
-        return Instantiate(original, parent, instantiateInWorldSpace);
+        static auto Instantiate = (Object*(*)(Object*, Transform*, bool))GetExternMethod("UnityEngine.Object::Instantiate");
+        if (Instantiate) return Instantiate(original, parent, instantiateInWorldSpace);
+        static Method<Object*> InstantiateM = GetClass().GetMethod("Instantiate", { "original", "parent", "instantiateInWorldSpace" });
+        return InstantiateM(original, parent, instantiateInWorldSpace);
     }
 
     static void DontDestroyOnLoad(Object* object){
-        static Method<void> DontDestroyOnLoad = GetClass().GetMethod("DontDestroyOnLoad");
-        DontDestroyOnLoad(object);
+        static auto DontDestroyOnLoad = (void(*)(Object*))GetExternMethod("UnityEngine.Object::DontDestroyOnLoad");
+        if (DontDestroyOnLoad) {
+            DontDestroyOnLoad(object);
+        } else {
+            static Method<void> DontDestroyOnLoadM = GetClass().GetMethod("DontDestroyOnLoad");
+            DontDestroyOnLoadM(object);
+        }
     }
 
     Array<Component*>* GetComponentsInChildren(MonoType* type){
-        static Method<Array<Component*>*> GetComponentsInChildren = GetClass().GetMethod("GetComponentsInChildren");
-        return GetComponentsInChildren[this](type);
+        static auto GetComponentsInChildren = (Array<Component*>*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::GetComponentsInChildren");
+        if (GetComponentsInChildren) return GetComponentsInChildren(this, type);
+        static Method<Array<Component*>*> GetComponentsInChildrenM = GetClass().GetMethod("GetComponentsInChildren");
+        return GetComponentsInChildrenM[this](type);
     }
 
     Array<Component*>* GetComponentsInParent(MonoType* type){
-        static Method<Array<Component*>*> GetComponentsInParent = GetClass().GetMethod("GetComponentsInParent");
-        return GetComponentsInParent[this](type);
+        static auto GetComponentsInParent = (Array<Component*>*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::GetComponentsInParent");
+        if (GetComponentsInParent) return GetComponentsInParent(this, type);
+        static Method<Array<Component*>*> GetComponentsInParentM = GetClass().GetMethod("GetComponentsInParent");
+        return GetComponentsInParentM[this](type);
     }
     Array<Component*>* GetComponents(MonoType* type){
-        static Method<Array<Component*>*> GetComponents = GetClass().GetMethod("GetComponents");
-        return GetComponents[this](type);
+        static auto GetComponents = (Array<Component*>*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::GetComponents");
+        if (GetComponents) return GetComponents(this, type);
+        static Method<Array<Component*>*> GetComponentsM = GetClass().GetMethod("GetComponents");
+        return GetComponentsM[this](type);
     }
     Component* GetComponentInParent(MonoType* type, bool includeInactive){
-        static auto GetComponentInParent = (Component*(*)(void*, MonoType*, bool))GetExternMethod("UnityEngine.GameObject::GetComponentInParent"); // consistently extern :(
-        return GetComponentInParent(this, type, includeInactive);
+        static auto GetComponentInParent = (Component*(*)(void*, MonoType*, bool))GetExternMethod("UnityEngine.GameObject::GetComponentInParent");
+        if (GetComponentInParent) return GetComponentInParent(this, type, includeInactive);
+        static Method<Component*> GetComponentInParentM = GetClass().GetMethod("GetComponentInParent", 2);
+        return GetComponentInParentM[this](type, includeInactive);
     }
     static Array<Object*>* FindObjectsOfType(MonoType * type){
-        static Method<Array<Object*>*> FindObjectsOfType = GetClass().GetMethod("FindObjectsOfType", {"type"});
-        return FindObjectsOfType(type);
+        static auto FindObjectsOfType = (Array<Object*>*(*)(MonoType*))GetExternMethod("UnityEngine.Object::FindObjectsOfType");
+        if (FindObjectsOfType) return FindObjectsOfType(type);
+        static Method<Array<Object*>*> FindObjectsOfTypeM = GetClass().GetMethod("FindObjectsOfType", {"type"});
+        return FindObjectsOfTypeM(type);
     }
     static Object* FindObjectOfType(MonoType* type){
-        static Method<Object*> FindObjectOfType = GetClass().GetMethod("FindObjectOfType", {"type"});
-        return FindObjectOfType(type);
+        static auto FindObjectOfType = (Object*(*)(MonoType*))GetExternMethod("UnityEngine.Object::FindObjectOfType");
+        if (FindObjectOfType) return FindObjectOfType(type);
+        static Method<Object*> FindObjectOfTypeM = GetClass().GetMethod("FindObjectOfType", {"type"});
+        return FindObjectOfTypeM(type);
     }
     Component* GetComponent(MonoType* type){
         static auto GetComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::GetComponent");
-        return GetComponent(this, type);
+        if (GetComponent) return GetComponent(this, type);
+        static Method<Component*> GetComponentM = GetClass().GetMethod("GetComponent", 1);
+        return GetComponentM[this](type);
     }
     Component* AddComponent(MonoType* type){
-        static Method<Component*> AddComponent = GetClass().GetMethod("AddComponent");
-        return AddComponent[this](type);
+        static auto AddComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::AddComponent");
+        if (AddComponent) return AddComponent(this, type);
+        static Method<Component*> AddComponentM = GetClass().GetMethod("AddComponent");
+        return AddComponentM[this](type);
     }
     Transform* GetTransform(){
         static auto get_transform = (Transform*(*)(void*))GetExternMethod("UnityEngine.GameObject::get_transform");
-        return get_transform(this);
+        if (get_transform) return get_transform(this);
+        static Method<Transform*> get_transform_m = GetClass().GetMethod("get_transform");
+        return get_transform_m[this]();
     }
     std::string GetTag(){
         static auto get_tag = (String*(*)(void*))GetExternMethod("UnityEngine.GameObject::get_tag");
-        auto tag = get_tag(this);
-        return tag->str();
+        if (get_tag) return get_tag(this)->str();
+        static Method<String*> get_tag_m = GetClass().GetMethod("get_tag");
+        return get_tag_m[this]()->str();
     }
     void SetTag(std::string str){
         static auto set_tag = (void (*)(void*, String*))GetExternMethod("UnityEngine.GameObject::set_tag");
-        set_tag(this, CreateMonoString(str));
+        if (set_tag) {
+            set_tag(this, CreateMonoString(str));
+        } else {
+            static Method<void> set_tag_m = GetClass().GetMethod("set_tag");
+            set_tag_m[this](CreateMonoString(str));
+        }
     }
     static GameObject* Find(std::string str){
         static auto Find = (GameObject*(*)(String*)) GetExternMethod("UnityEngine.GameObject::Find");
-        return Find(CreateMonoString(str));
+        if (Find) return Find(CreateMonoString(str));
+        static Method<GameObject*> FindM = GetClass().GetMethod("Find");
+        return FindM(CreateMonoString(str));
     }
     void SetActive(bool active){
         static auto SetActive = (void (*)(void*, bool))GetExternMethod("UnityEngine.GameObject::SetActive");
-        SetActive(this, active);
+        if (SetActive) {
+            SetActive(this, active);
+        } else {
+            static Method<void> SetActiveM = GetClass().GetMethod("SetActive");
+            SetActiveM[this](active);
+        }
     }
     bool GetActiveSelf(){
         static auto get_activeSelf = (bool (*)(void*))GetExternMethod("UnityEngine.GameObject::get_activeSelf");
-        return get_activeSelf(this);
+        if (get_activeSelf) return get_activeSelf(this);
+        static Method<bool> get_activeSelf_m = GetClass().GetMethod("get_activeSelf");
+        return get_activeSelf_m[this]();
     }
     void SetLayer(int layer) {
         static auto set_layer = (void (*)(void*, int))GetExternMethod("UnityEngine.GameObject::set_layer");
-        set_layer(this, layer);
+        if (set_layer) {
+            set_layer(this, layer);
+        } else {
+            static Method<void> set_layer_m = GetClass().GetMethod("set_layer");
+            set_layer_m[this](layer);
+        }
     }
     int GetLayer() {
         static auto get_layer = (int (*)(void*))GetExternMethod("UnityEngine.GameObject::get_layer");
-        return get_layer(this);
+        if (get_layer) return get_layer(this);
+        static Method<int> get_layer_m = GetClass().GetMethod("get_layer");
+        return get_layer_m[this]();
     }
 
     std::string GetName(){
-        static Method<String*> get_name = GetClass().GetMethod("get_name");
-        auto tag = get_name[this]();
-        return tag->str();
+        static auto get_name = (String*(*)(void*))GetExternMethod("UnityEngine.Object::get_name");
+        if (get_name) return get_name(this)->str();
+        static Method<String*> get_name_m = GetClass().GetMethod("get_name");
+        return get_name_m[this]()->str();
     }
     void SetName(std::string name){
-        static Method<void> set_name = GetClass().GetMethod("set_name");
-        set_name[this](CreateMonoString(name));
+        static auto set_name = (void(*)(void*, String*))GetExternMethod("UnityEngine.Object::set_name");
+        if (set_name) {
+            set_name(this, CreateMonoString(name));
+        } else {
+            static Method<void> set_name_m = GetClass().GetMethod("set_name");
+            set_name_m[this](CreateMonoString(name));
+        }
     }
 };
 struct Transform : Component{
@@ -532,96 +666,178 @@ struct Transform : Component{
     }
 
     Vector3 GetPosition(){
-        static Method<Vector3> get_position = GetClass().GetMethod("get_position");
-        return get_position[this]();
+        static auto get_position = (Vector3(*)(void*))GetExternMethod("UnityEngine.Transform::get_position");
+        if (get_position) return get_position(this);
+        static Method<Vector3> get_position_m = GetClass().GetMethod("get_position");
+        return get_position_m[this]();
     }
     void SetPosition(Vector3 position){
-        static Method<void> set_position = GetClass().GetMethod("set_position");
-        set_position[this](position);
+        static auto set_position = (void(*)(void*, Vector3))GetExternMethod("UnityEngine.Transform::set_position");
+        if (set_position) {
+            set_position(this, position);
+        } else {
+            static Method<void> set_position_m = GetClass().GetMethod("set_position");
+            set_position_m[this](position);
+        }
     }
     Vector3 GetLocalPosition(){
-        static Method<Vector3> get_position = GetClass().GetMethod("get_localPosition");
-        return get_position[this]();
+        static auto get_localPosition = (Vector3(*)(void*))GetExternMethod("UnityEngine.Transform::get_localPosition");
+        if (get_localPosition) return get_localPosition(this);
+        static Method<Vector3> get_localPosition_m = GetClass().GetMethod("get_localPosition");
+        return get_localPosition_m[this]();
     }
     void SetLocalPosition(Vector3 position){
-        static Method<void> set_position = GetClass().GetMethod("set_localPosition");
-        set_position[this](position);
+        static auto set_localPosition = (void(*)(void*, Vector3))GetExternMethod("UnityEngine.Transform::set_localPosition");
+        if (set_localPosition) {
+            set_localPosition(this, position);
+        } else {
+            static Method<void> set_localPosition_m = GetClass().GetMethod("set_localPosition");
+            set_localPosition_m[this](position);
+        }
     }
     void LookAt(Transform* target){
-        static Method<void> LookAt = GetClass().GetMethod("LookAt", {"target"});
-        LookAt[this](target);
+        static auto LookAt = (void(*)(void*, Transform*))GetExternMethod("UnityEngine.Transform::LookAt");
+        if (LookAt) {
+            LookAt(this, target);
+        } else {
+            static Method<void> LookAtM = GetClass().GetMethod("LookAt", {"target"});
+            LookAtM[this](target);
+        }
     }
     void LookAt(Vector3 worldPosition){
-        static Method<void> LookAt = GetClass().GetMethod("LookAt", {"worldPosition"});
-        LookAt[this](worldPosition);
+        static auto LookAt = (void(*)(void*, Vector3))GetExternMethod("UnityEngine.Transform::LookAt");
+        if (LookAt) {
+            LookAt(this, worldPosition);
+        } else {
+            static Method<void> LookAtM = GetClass().GetMethod("LookAt", {"worldPosition"});
+            LookAtM[this](worldPosition);
+        }
     }
     void* GetParent(){
-        static Method<void*> get_parent = GetClass().GetMethod("get_parent");
-        return get_parent[this]();
+        static auto get_parent = (void*(*)(void*))GetExternMethod("UnityEngine.Transform::get_parent");
+        if (get_parent) return get_parent(this);
+        static Method<void*> get_parent_m = GetClass().GetMethod("get_parent");
+        return get_parent_m[this]();
     }
     void SetParent(Transform* parent){
-        static Method<void> set_parent = GetClass().GetMethod("set_parent");
-        set_parent[this](parent);
+        static auto set_parent = (void(*)(void*, Transform*))GetExternMethod("UnityEngine.Transform::set_parent");
+        if (set_parent) {
+            set_parent(this, parent);
+        } else {
+            static Method<void> set_parent_m = GetClass().GetMethod("set_parent");
+            set_parent_m[this](parent);
+        }
     }
     void SetParent(Transform* parent, bool worldPositionStays){
-        static Method<void*> set_parent = GetClass().GetMethod("SetParent", 2);
-        set_parent[this](parent, worldPositionStays);
+        static auto SetParent = (void(*)(void*, Transform*, bool))GetExternMethod("UnityEngine.Transform::SetParent");
+        if (SetParent) {
+            SetParent(this, parent, worldPositionStays);
+        } else {
+            static Method<void> SetParentM = GetClass().GetMethod("SetParent", 2);
+            SetParentM[this](parent, worldPositionStays);
+        }
     }
     Vector3 GetForward(){
-        static Method<Vector3> get_forward = GetClass().GetMethod("get_forward");
-        return get_forward[this]();
+        static auto get_forward = (Vector3(*)(void*))GetExternMethod("UnityEngine.Transform::get_forward");
+        if (get_forward) return get_forward(this);
+        static Method<Vector3> get_forward_m = GetClass().GetMethod("get_forward");
+        return get_forward_m[this]();
     }
     void SetForward(Vector3 forward){
-        static Method<void> set_forward = GetClass().GetMethod("set_forward");
-        set_forward[this](forward);
+        static auto set_forward = (void(*)(void*, Vector3))GetExternMethod("UnityEngine.Transform::set_forward");
+        if (set_forward) {
+            set_forward(this, forward);
+        } else {
+            static Method<void> set_forward_m = GetClass().GetMethod("set_forward");
+            set_forward_m[this](forward);
+        }
     }
     Vector3 GetRight(){
-        static Method<Vector3> get_right = GetClass().GetMethod("get_right");
-        return get_right[this]();
+        static auto get_right = (Vector3(*)(void*))GetExternMethod("UnityEngine.Transform::get_right");
+        if (get_right) return get_right(this);
+        static Method<Vector3> get_right_m = GetClass().GetMethod("get_right");
+        return get_right_m[this]();
     }
     Vector3 GetUp() {
-        static Method<Vector3> get_up = GetClass().GetMethod("get_up");
-        return get_up[this]();
+        static auto get_up = (Vector3(*)(void*))GetExternMethod("UnityEngine.Transform::get_up");
+        if (get_up) return get_up(this);
+        static Method<Vector3> get_up_m = GetClass().GetMethod("get_up");
+        return get_up_m[this]();
     }
     Vector3 GetLocalScale(){
-        static Method<Vector3> get_localScale = GetClass().GetMethod("get_localScale");
-        return get_localScale[this]();
+        static auto get_localScale = (Vector3(*)(void*))GetExternMethod("UnityEngine.Transform::get_localScale");
+        if (get_localScale) return get_localScale(this);
+        static Method<Vector3> get_localScale_m = GetClass().GetMethod("get_localScale");
+        return get_localScale_m[this]();
     }
     void SetLocalScale(Vector3 scale){
-        static Method<void> set_localScale = GetClass().GetMethod("set_localScale");
-        set_localScale[this](scale);
+        static auto set_localScale = (void(*)(void*, Vector3))GetExternMethod("UnityEngine.Transform::set_localScale");
+        if (set_localScale) {
+            set_localScale(this, scale);
+        } else {
+            static Method<void> set_localScale_m = GetClass().GetMethod("set_localScale");
+            set_localScale_m[this](scale);
+        }
     }
     Quaternion GetRotation(){
-        static Method<Quaternion> get_rotation = GetClass().GetMethod("get_rotation");
-        return get_rotation[this]();
+        static auto get_rotation = (Quaternion(*)(void*))GetExternMethod("UnityEngine.Transform::get_rotation");
+        if (get_rotation) return get_rotation(this);
+        static Method<Quaternion> get_rotation_m = GetClass().GetMethod("get_rotation");
+        return get_rotation_m[this]();
     }
     void SetRotation(Quaternion rotation){
-        static Method<void> set_rotation = GetClass().GetMethod("set_rotation");
-        set_rotation[this](rotation);
+        static auto set_rotation = (void(*)(void*, Quaternion))GetExternMethod("UnityEngine.Transform::set_rotation");
+        if (set_rotation) {
+            set_rotation(this, rotation);
+        } else {
+            static Method<void> set_rotation_m = GetClass().GetMethod("set_rotation");
+            set_rotation_m[this](rotation);
+        }
     }
     Quaternion GetLocalRotation(){
-        static Method<Quaternion> get_rotation = GetClass().GetMethod("get_localRotation");
-        return get_rotation[this]();
+        static auto get_localRotation = (Quaternion(*)(void*))GetExternMethod("UnityEngine.Transform::get_localRotation");
+        if (get_localRotation) return get_localRotation(this);
+        static Method<Quaternion> get_localRotation_m = GetClass().GetMethod("get_localRotation");
+        return get_localRotation_m[this]();
     }
     void SetLocalRotation(Quaternion rotation){
-        static Method<void> set_rotation = GetClass().GetMethod("set_localRotation");
-        set_rotation[this](rotation);
+        static auto set_localRotation = (void(*)(void*, Quaternion))GetExternMethod("UnityEngine.Transform::set_localRotation");
+        if (set_localRotation) {
+            set_localRotation(this, rotation);
+        } else {
+            static Method<void> set_localRotation_m = GetClass().GetMethod("set_localRotation");
+            set_localRotation_m[this](rotation);
+        }
     }
     Vector3 GetLocalEulerAngles() {
-        static Method<Vector3> get_localEulerAngles = GetClass().GetMethod("get_localEulerAngles");
-        return get_localEulerAngles[this]();
+        static auto get_localEulerAngles = (Vector3(*)(void*))GetExternMethod("UnityEngine.Transform::get_localEulerAngles");
+        if (get_localEulerAngles) return get_localEulerAngles(this);
+        static Method<Vector3> get_localEulerAngles_m = GetClass().GetMethod("get_localEulerAngles");
+        return get_localEulerAngles_m[this]();
     }
     void SetLocalEulerAngles(Vector3 val) {
-        static Method<void> set_localEulerAngles = GetClass().GetMethod("set_localEulerAngles");
-        set_localEulerAngles[this](val);
+        static auto set_localEulerAngles = (void(*)(void*, Vector3))GetExternMethod("UnityEngine.Transform::set_localEulerAngles");
+        if (set_localEulerAngles) {
+            set_localEulerAngles(this, val);
+        } else {
+            static Method<void> set_localEulerAngles_m = GetClass().GetMethod("set_localEulerAngles");
+            set_localEulerAngles_m[this](val);
+        }
     }
     Vector3 GetEulerAngles() {
-        static Method<Vector3> get_eulerAngles = GetClass().GetMethod("get_eulerAngles");
-        return get_eulerAngles[this]();
+        static auto get_eulerAngles = (Vector3(*)(void*))GetExternMethod("UnityEngine.Transform::get_eulerAngles");
+        if (get_eulerAngles) return get_eulerAngles(this);
+        static Method<Vector3> get_eulerAngles_m = GetClass().GetMethod("get_eulerAngles");
+        return get_eulerAngles_m[this]();
     }
     void SetEulerAngles(Vector3 val) {
-        static Method<void> set_eulerAngles = GetClass().GetMethod("set_eulerAngles");
-        set_eulerAngles[this](val);
+        static auto set_eulerAngles = (void(*)(void*, Vector3))GetExternMethod("UnityEngine.Transform::set_eulerAngles");
+        if (set_eulerAngles) {
+            set_eulerAngles(this, val);
+        } else {
+            static Method<void> set_eulerAngles_m = GetClass().GetMethod("set_eulerAngles");
+            set_eulerAngles_m[this](val);
+        }
     }
 };
 struct Behaviour : Component{
@@ -635,11 +851,18 @@ struct Behaviour : Component{
     }
     void SetEnabled(bool enabled){
         static auto set_enabled = (void(*)(void*, bool))GetExternMethod("UnityEngine.Behaviour::set_enabled");
-        set_enabled(this, enabled);
+        if (set_enabled) {
+            set_enabled(this, enabled);
+        } else {
+            static Method<void> set_enabled_m = GetClass().GetMethod("set_enabled");
+            set_enabled_m[this](enabled);
+        }
     }
     bool GetEnabled(){
         static auto get_enabled = (bool(*)(void*))GetExternMethod("UnityEngine.Behaviour::get_enabled");
-        return get_enabled(this);
+        if (get_enabled) return get_enabled(this);
+        static Method<bool> get_enabled_m = GetClass().GetMethod("get_enabled");
+        return get_enabled_m[this]();
     }
 };
 struct Camera : Behaviour{
@@ -654,17 +877,26 @@ struct Camera : Behaviour{
 
     static Camera* GetMain(){
         static auto get_main = (Camera*(*)())GetExternMethod("UnityEngine.Camera::get_main");
-        return get_main();
+        if (get_main) return get_main();
+        static Method<Camera*> get_main_m = GetClass().GetMethod("get_main");
+        return get_main_m();
     }
 
     float GetFarClipPlane() {
-        static Method<float> get_farClipPlane = GetClass().GetMethod("get_farClipPlane");
-        return get_farClipPlane[this]();
+        static auto get_farClipPlane = (float(*)(void*))GetExternMethod("UnityEngine.Camera::get_farClipPlane");
+        if (get_farClipPlane) return get_farClipPlane(this);
+        static Method<float> get_farClipPlane_m = GetClass().GetMethod("get_farClipPlane");
+        return get_farClipPlane_m[this]();
     }
 
     void SetFarClipPlane(float value) {
-        static Method<void> set_farClipPlane = GetClass().GetMethod("set_farClipPlane");
-        set_farClipPlane[this](value);
+        static auto set_farClipPlane = (void(*)(void*, float))GetExternMethod("UnityEngine.Camera::set_farClipPlane");
+        if (set_farClipPlane) {
+            set_farClipPlane(this, value);
+        } else {
+            static Method<void> set_farClipPlane_m = GetClass().GetMethod("set_farClipPlane");
+            set_farClipPlane_m[this](value);
+        }
     }
 };
 struct Canvas : Behaviour{
@@ -678,19 +910,33 @@ struct Canvas : Behaviour{
     }
     void SetRenderMode(RenderMode mode){
         static auto set_renderMode = (void(*)(void*, RenderMode))GetExternMethod("UnityEngine.Canvas::set_renderMode");
-        set_renderMode(this, mode);
+        if (set_renderMode) {
+            set_renderMode(this, mode);
+        } else {
+            static Method<void> set_renderMode_m = GetClass().GetMethod("set_renderMode");
+            set_renderMode_m[this](mode);
+        }
     }
     RenderMode GetRenderMode(){
         static auto get_renderMode = (RenderMode(*)(void*))GetExternMethod("UnityEngine.Canvas::get_renderMode");
-        return get_renderMode(this);
+        if (get_renderMode) return get_renderMode(this);
+        static Method<RenderMode> get_renderMode_m = GetClass().GetMethod("get_renderMode");
+        return get_renderMode_m[this]();
     }
     void SetWorldCamera(Camera* camera){
         static auto set_worldCamera = (void(*)(void*, Camera*))GetExternMethod("UnityEngine.Canvas::set_worldCamera");
-        set_worldCamera(this, camera);
+        if (set_worldCamera) {
+            set_worldCamera(this, camera);
+        } else {
+            static Method<void> set_worldCamera_m = GetClass().GetMethod("set_worldCamera");
+            set_worldCamera_m[this](camera);
+        }
     }
     Camera GetWorldCamera(){
         static auto get_worldCamera = (Camera(*)(void*))GetExternMethod("UnityEngine.Canvas::get_worldCamera");
-        return get_worldCamera(this);
+        if (get_worldCamera) return get_worldCamera(this);
+        static Method<Camera> get_worldCamera_m = GetClass().GetMethod("get_worldCamera");
+        return get_worldCamera_m[this]();
     }
 };
 struct UIBehavior : Behaviour{
@@ -713,20 +959,34 @@ struct CanvasScaler : UIBehavior{
         return mclass;
     }
     float GetDynamicPixelsPerUnit() {
-        static Method<float> get_dynamicPixelsPerUnit = GetClass().GetMethod("get_dynamicPixelsPerUnit");
-        return get_dynamicPixelsPerUnit[this]();
+        static auto get_dynamicPixelsPerUnit = (float(*)(void*))GetExternMethod("UnityEngine.UI.CanvasScaler::get_dynamicPixelsPerUnit");
+        if (get_dynamicPixelsPerUnit) return get_dynamicPixelsPerUnit(this);
+        static Method<float> get_dynamicPixelsPerUnit_m = GetClass().GetMethod("get_dynamicPixelsPerUnit");
+        return get_dynamicPixelsPerUnit_m[this]();
     }
     void SetDynamicPixelsPerUnit(float canvasScaleFloat){
-        static Method<void> set_dynamicPixelsPerUnit = GetClass().GetMethod("set_dynamicPixelsPerUnit");
-        set_dynamicPixelsPerUnit[this](canvasScaleFloat);
+        static auto set_dynamicPixelsPerUnit = (void(*)(void*, float))GetExternMethod("UnityEngine.UI.CanvasScaler::set_dynamicPixelsPerUnit");
+        if (set_dynamicPixelsPerUnit) {
+            set_dynamicPixelsPerUnit(this, canvasScaleFloat);
+        } else {
+            static Method<void> set_dynamicPixelsPerUnit_m = GetClass().GetMethod("set_dynamicPixelsPerUnit");
+            set_dynamicPixelsPerUnit_m[this](canvasScaleFloat);
+        }
     }
     float GetReferencePixelsPerUnit() {
-        static Method<float> get_referencePixelsPerUnit = GetClass().GetMethod("get_referencePixelsPerUnit");
-        return get_referencePixelsPerUnit[this]();
+        static auto get_referencePixelsPerUnit = (float(*)(void*))GetExternMethod("UnityEngine.UI.CanvasScaler::get_referencePixelsPerUnit");
+        if (get_referencePixelsPerUnit) return get_referencePixelsPerUnit(this);
+        static Method<float> get_referencePixelsPerUnit_m = GetClass().GetMethod("get_referencePixelsPerUnit");
+        return get_referencePixelsPerUnit_m[this]();
     }
     void SetReferencePixelsPerUnit(float canvasScaleFloat){
-        static Method<void> set_referencePixelsPerUnit = GetClass().GetMethod("set_referencePixelsPerUnit");
-        set_referencePixelsPerUnit[this](canvasScaleFloat);
+        static auto set_referencePixelsPerUnit = (void(*)(void*, float))GetExternMethod("UnityEngine.UI.CanvasScaler::set_referencePixelsPerUnit");
+        if (set_referencePixelsPerUnit) {
+            set_referencePixelsPerUnit(this, canvasScaleFloat);
+        } else {
+            static Method<void> set_referencePixelsPerUnit_m = GetClass().GetMethod("set_referencePixelsPerUnit");
+            set_referencePixelsPerUnit_m[this](canvasScaleFloat);
+        }
     }
 };
 struct BaseRaycaster : UIBehavior{
@@ -759,17 +1019,25 @@ struct Shader : NamedObject{
         return mclass;
     }
     static Shader* Find(std::string shaderName){
-        static Method<Shader*> Find = GetClass().GetMethod("Find");
-        return Find(CreateMonoString(shaderName));
+        static auto Find = (Shader*(*)(String*))GetExternMethod("UnityEngine.Shader::Find");
+        if (Find) return Find(CreateMonoString(shaderName));
+        static Method<Shader*> FindM = GetClass().GetMethod("Find");
+        return FindM(CreateMonoString(shaderName));
     }
     std::string GetName(){
-        static Method<String*> get_name = GetClass().GetMethod("get_name");
-        auto tag = get_name[this]();
-        return tag->str();
+        static auto get_name = (String*(*)(void*))GetExternMethod("UnityEngine.Object::get_name");
+        if (get_name) return get_name(this)->str();
+        static Method<String*> get_name_m = GetClass().GetMethod("get_name");
+        return get_name_m[this]()->str();
     }
     void SetName(std::string name){
-        static Method<void> set_name = GetClass().GetMethod("set_name");
-        set_name[this](CreateMonoString(name));
+        static auto set_name = (void(*)(void*, String*))GetExternMethod("UnityEngine.Object::set_name");
+        if (set_name) {
+            set_name(this, CreateMonoString(name));
+        } else {
+            static Method<void> set_name_m = GetClass().GetMethod("set_name");
+            set_name_m[this](CreateMonoString(name));
+        }
     }
 
 };
@@ -782,21 +1050,44 @@ struct Material : NamedObject{
         static Class mclass = Class("UnityEngine", "Material");
         return mclass;
     }
+    void SetFloat(std::string name, float value) {
+        static auto SetFloat = (void(*)(void*, String*, float))GetExternMethod("UnityEngine.Material::SetFloat");
+        if (SetFloat) {
+            SetFloat(this, CreateMonoString(name), value);
+        } else {
+            static Method<void> SetFloatM = GetClass().GetMethod("SetFloat", 2);
+            SetFloatM[this](CreateMonoString(name), value);
+        }
+    }
     Shader* GetShader(){
-        static auto getShader = (Shader*(*)(void*)) GetExternMethod("UnityEngine.Material::get_shader");
-        return getShader(this);
+        static auto get_shader = (Shader*(*)(void*)) GetExternMethod("UnityEngine.Material::get_shader");
+        if (get_shader) return get_shader(this);
+        static Method<Shader*> get_shader_m = GetClass().GetMethod("get_shader");
+        return get_shader_m[this]();
     }
     void SetShader(Shader* shader){
-        static auto setShader = (void(*)(void*, Shader*)) GetExternMethod("UnityEngine.Material::set_shader");
-        setShader(this, shader);
+        static auto set_shader = (void(*)(void*, Shader*)) GetExternMethod("UnityEngine.Material::set_shader");
+        if (set_shader) {
+            set_shader(this, shader);
+        } else {
+            static Method<void> set_shader_m = GetClass().GetMethod("set_shader");
+            set_shader_m[this](shader);
+        }
     }
     Color GetColor(){
-        static Method<Color> get_color = GetClass().GetMethod("get_color");
-        return get_color[this]();
+        static auto get_color = (Color(*)(void*))GetExternMethod("UnityEngine.Material::get_color");
+        if (get_color) return get_color(this);
+        static Method<Color> get_color_m = GetClass().GetMethod("get_color");
+        return get_color_m[this]();
     }
     void SetColor(Color color){
-        static Method<void> set_color = GetClass().GetMethod("set_color");
-        set_color[this](color);
+        static auto set_color = (void(*)(void*, Color))GetExternMethod("UnityEngine.Material::set_color");
+        if (set_color) {
+            set_color(this, color);
+        } else {
+            static Method<void> set_color_m = GetClass().GetMethod("set_color");
+            set_color_m[this](color);
+        }
     }
 };
 struct Renderer : Component{
@@ -811,24 +1102,40 @@ struct Renderer : Component{
 
     void SetEnabled(bool value) {
         static auto set_enabled = (void(*)(void*, bool))GetExternMethod("UnityEngine.Renderer::set_enabled");
-        set_enabled(this, value);
+        if (set_enabled) {
+            set_enabled(this, value);
+        } else {
+            static Method<void> set_enabled_m = GetClass().GetMethod("set_enabled");
+            set_enabled_m[this](value);
+        }
     }
     bool GetEnabled() {
         static auto get_enabled = (bool(*)(void*))GetExternMethod("UnityEngine.Renderer::get_enabled");
-        return get_enabled(this);
+        if (get_enabled) return get_enabled(this);
+        static Method<bool> get_enabled_m = GetClass().GetMethod("get_enabled");
+        return get_enabled_m[this]();
     }
 
     Material* GetMaterial(){
-        static auto getMaterial = (Material*(*)(void*)) GetExternMethod("UnityEngine.Renderer::GetMaterial");
-        return getMaterial(this);
+        static auto GetMaterial = (Material*(*)(void*)) GetExternMethod("UnityEngine.Renderer::get_material");
+        if (GetMaterial) return GetMaterial(this);
+        static Method<Material*> GetMaterialM = GetClass().GetMethod("get_material");
+        return GetMaterialM[this]();
     }
     void SetMaterial(Material* material){
-        static auto setMaterial = (void(*)(void*, Material*)) GetExternMethod("UnityEngine.Renderer::SetMaterial");
-        setMaterial(this, material);
+        static auto SetMaterial = (void(*)(void*, Material*)) GetExternMethod("UnityEngine.Renderer::set_material");
+        if (SetMaterial) {
+            SetMaterial(this, material);
+        } else {
+            static Method<void> SetMaterialM = GetClass().GetMethod("set_material");
+            SetMaterialM[this](material);
+        }
     }
     Array<Material*>* GetMaterialArray() {
         static auto GetMaterialArray = (Array<Material*>*(*)(void*))GetExternMethod("UnityEngine.Renderer::GetMaterialArray");
-        return GetMaterialArray(this);
+        if (GetMaterialArray) return GetMaterialArray(this);
+        static Method<Array<Material*>*> GetMaterialArrayM = GetClass().GetMethod("GetMaterialArray");
+        return GetMaterialArrayM[this]();
     }
 
 };
@@ -843,23 +1150,39 @@ struct SkinnedMeshRenderer : Renderer {
 
     Array<Transform*>* GetBones() {
         static auto get_bones = (Array<Transform*>*(*)(void*))GetExternMethod("UnityEngine.SkinnedMeshRenderer::get_bones");
-        return get_bones(this);
+        if (get_bones) return get_bones(this);
+        static Method<Array<Transform*>*> get_bones_m = GetClass().GetMethod("get_bones");
+        return get_bones_m[this]();
     }
     void SetBones(Array<Transform*>* bones) {
         static auto set_bones = (void(*)(void*, Array<Transform*>*))GetExternMethod("UnityEngine.SkinnedMeshRenderer::set_bones");
-        return set_bones(this, bones);
+        if (set_bones) {
+            set_bones(this, bones);
+        } else {
+            static Method<void> set_bones_m = GetClass().GetMethod("set_bones");
+            set_bones_m[this](bones);
+        }
     }
     Transform* GetRootBone() {
         static auto get_rootBone = (Transform*(*)(void*))GetExternMethod("UnityEngine.SkinnedMeshRenderer::get_rootBone");
-        return get_rootBone(this);
+        if (get_rootBone) return get_rootBone(this);
+        static Method<Transform*> get_rootBone_m = GetClass().GetMethod("get_rootBone");
+        return get_rootBone_m[this]();
     }
     bool GetUpdateWhenOffscreen() {
         static auto get_updateWhenOffscreen = (bool(*)(void*))GetExternMethod("UnityEngine.SkinnedMeshRenderer::get_updateWhenOffscreen");
-        return get_updateWhenOffscreen(this);
+        if (get_updateWhenOffscreen) return get_updateWhenOffscreen(this);
+        static Method<bool> get_updateWhenOffscreen_m = GetClass().GetMethod("get_updateWhenOffscreen");
+        return get_updateWhenOffscreen_m[this]();
     }
     void SetUpdateWhenOffscreen(bool value) {
         static auto set_updateWhenOffscreen = (void(*)(void*, bool))GetExternMethod("UnityEngine.SkinnedMeshRenderer::set_updateWhenOffscreen");
-        set_updateWhenOffscreen(this, value);
+        if (set_updateWhenOffscreen) {
+            set_updateWhenOffscreen(this, value);
+        } else {
+            static Method<void> set_updateWhenOffscreen_m = GetClass().GetMethod("set_updateWhenOffscreen");
+            set_updateWhenOffscreen_m[this](value);
+        }
     }
 };
 struct RectTransform : Transform{
@@ -873,12 +1196,19 @@ struct RectTransform : Transform{
     }
 
     void SetSizeDelta(Vector2 sizeDelta){
-        static Method<void> set_sizeDelta = GetClass().GetMethod("set_sizeDelta");
-        set_sizeDelta[this](sizeDelta);
+        static auto set_sizeDelta = (void(*)(void*, Vector2))GetExternMethod("UnityEngine.RectTransform::set_sizeDelta");
+        if (set_sizeDelta) {
+            set_sizeDelta(this, sizeDelta);
+        } else {
+            static Method<void> set_sizeDelta_m = GetClass().GetMethod("set_sizeDelta");
+            set_sizeDelta_m[this](sizeDelta);
+        }
     }
     Vector2 GetSizeDelta(){
-        static Method<Vector2> get_sizeDelta = GetClass().GetMethod("get_sizeDelta");
-        return get_sizeDelta[this]();
+        static auto get_sizeDelta = (Vector2(*)(void*))GetExternMethod("UnityEngine.RectTransform::get_sizeDelta");
+        if (get_sizeDelta) return get_sizeDelta(this);
+        static Method<Vector2> get_sizeDelta_m = GetClass().GetMethod("get_sizeDelta");
+        return get_sizeDelta_m[this]();
     }
 };
 struct Graphic : UIBehavior{
@@ -891,28 +1221,46 @@ struct Graphic : UIBehavior{
         return mclass;
     }
     Color GetColor(){
-        static Method<Color> get_color = GetClass().GetMethod("get_color");
-        return get_color[this]();
+        static auto get_color = (Color(*)(void*))GetExternMethod("UnityEngine.UI.Graphic::get_color");
+        if (get_color) return get_color(this);
+        static Method<Color> get_color_m = GetClass().GetMethod("get_color");
+        return get_color_m[this]();
     }
     void SetColor(Color color){
-        static Method<void> set_color = GetClass().GetMethod("set_color");
-        set_color[this](color);
+        static auto set_color = (void(*)(void*, Color))GetExternMethod("UnityEngine.UI.Graphic::set_color");
+        if (set_color) {
+            set_color(this, color);
+        } else {
+            static Method<void> set_color_m = GetClass().GetMethod("set_color");
+            set_color_m[this](color);
+        }
     }
     Canvas* GetCanvas(){
-        static Method<Canvas*> get_canvas = GetClass().GetMethod("get_canvas");
-        return get_canvas[this]();
+        static auto get_canvas = (Canvas*(*)(void*))GetExternMethod("UnityEngine.UI.Graphic::get_canvas");
+        if (get_canvas) return get_canvas(this);
+        static Method<Canvas*> get_canvas_m = GetClass().GetMethod("get_canvas");
+        return get_canvas_m[this]();
     }
     Material* GetMaterial(){
-        static Method<Material*> get_material = GetClass().GetMethod("get_material");
-        return get_material[this]();
+        static auto get_material = (Material*(*)(void*))GetExternMethod("UnityEngine.UI.Graphic::get_material");
+        if (get_material) return get_material(this);
+        static Method<Material*> get_material_m = GetClass().GetMethod("get_material");
+        return get_material_m[this]();
     }
     void SetMaterial(Material* material){
-        static Method<void> set_material = GetClass().GetMethod("set_material");
-        set_material[this](material);
+        static auto set_material = (void(*)(void*, Material*))GetExternMethod("UnityEngine.UI.Graphic::set_material");
+        if (set_material) {
+            set_material(this, material);
+        } else {
+            static Method<void> set_material_m = GetClass().GetMethod("set_material");
+            set_material_m[this](material);
+        }
     }
     RectTransform* GetRectTransform() {
-        static Method<RectTransform*> get_rectTransform = GetClass().GetMethod("get_rectTransform");
-        return get_rectTransform[this]();
+        static auto get_rectTransform = (RectTransform*(*)(void*))GetExternMethod("UnityEngine.UI.Graphic::get_rectTransform");
+        if (get_rectTransform) return get_rectTransform(this);
+        static Method<RectTransform*> get_rectTransform_m = GetClass().GetMethod("get_rectTransform");
+        return get_rectTransform_m[this]();
     }
 };
 struct MaskableGraphic : Graphic{
@@ -945,79 +1293,141 @@ struct Text : MaskableGraphic{
         return mclass;
     }
     TextAnchor GetAlignment(){
-        static Method<TextAnchor> get_alignment = GetClass().GetMethod("get_alignment");
-        return get_alignment[this]();
+        static auto get_alignment = (TextAnchor(*)(void*))GetExternMethod("UnityEngine.UI.Text::get_alignment");
+        if (get_alignment) return get_alignment(this);
+        static Method<TextAnchor> get_alignment_m = GetClass().GetMethod("get_alignment");
+        return get_alignment_m[this]();
     }
     void SetAlignment(TextAnchor alignment){
-        static Method<TextAnchor> set_alignment = GetClass().GetMethod("set_alignment");
-        set_alignment[this](alignment);
+        static auto set_alignment = (void(*)(void*, TextAnchor))GetExternMethod("UnityEngine.UI.Text::set_alignment");
+        if (set_alignment) {
+            set_alignment(this, alignment);
+        } else {
+            static Method<TextAnchor> set_alignment_m = GetClass().GetMethod("set_alignment");
+            set_alignment_m[this](alignment);
+        }
     }
     Font* GetFont(){
-        static Method<Font*> get_font = GetClass().GetMethod("get_font");
-        return get_font[this]();
+        static auto get_font = (Font*(*)(void*))GetExternMethod("UnityEngine.UI.Text::get_font");
+        if (get_font) return get_font(this);
+        static Method<Font*> get_font_m = GetClass().GetMethod("get_font");
+        return get_font_m[this]();
     }
     void SetFont(Font* font){
-        static Method<void> set_font = GetClass().GetMethod("set_font");
-        return set_font[this](font);
+        static auto set_font = (void(*)(void*, Font*))GetExternMethod("UnityEngine.UI.Text::set_font");
+        if (set_font) {
+            set_font(this, font);
+        } else {
+            static Method<void> set_font_m = GetClass().GetMethod("set_font");
+            set_font_m[this](font);
+        }
     }
     int GetFontSize(){
-        static Method<int> get_fontSize = GetClass().GetMethod("get_fontSize");
-        return get_fontSize[this]();
+        static auto get_fontSize = (int(*)(void*))GetExternMethod("UnityEngine.UI.Text::get_fontSize");
+        if (get_fontSize) return get_fontSize(this);
+        static Method<int> get_fontSize_m = GetClass().GetMethod("get_fontSize");
+        return get_fontSize_m[this]();
     }
     void SetFontSize(int size){
-        static Method<void> set_fontSize = GetClass().GetMethod("set_fontSize");
-        set_fontSize[this](size);
+        static auto set_fontSize = (void(*)(void*, int))GetExternMethod("UnityEngine.UI.Text::set_fontSize");
+        if (set_fontSize) {
+            set_fontSize(this, size);
+        } else {
+            static Method<void> set_fontSize_m = GetClass().GetMethod("set_fontSize");
+            set_fontSize_m[this](size);
+        }
     }
     std::string GetText(){
-        static Method<String*> get_text = GetClass().GetMethod("get_text");
-        auto text = get_text[this]();
-        return text->str();
+        static auto get_text = (String*(*)(void*))GetExternMethod("UnityEngine.UI.Text::get_text");
+        if (get_text) return get_text(this)->str();
+        static Method<String*> get_text_m = GetClass().GetMethod("get_text");
+        return get_text_m[this]()->str();
     }
     void SetText(std::string text){
-        static Method<void> set_text = GetClass().GetMethod("set_text");
-        set_text[this](CreateMonoString(text));
+        static auto set_text = (void(*)(void*, String*))GetExternMethod("UnityEngine.UI.Text::set_text");
+        if (set_text) {
+            set_text(this, CreateMonoString(text));
+        } else {
+            static Method<void> set_text_m = GetClass().GetMethod("set_text");
+            set_text_m[this](CreateMonoString(text));
+        }
     }
     bool GetTextResizeForBestFit(){
-        static Method<bool> get_resizeTextForBestFit = GetClass().GetMethod("get_resizeTextForBestFit");
-        return get_resizeTextForBestFit[this]();
+        static auto get_resizeTextForBestFit = (bool(*)(void*))GetExternMethod("UnityEngine.UI.Text::get_resizeTextForBestFit");
+        if (get_resizeTextForBestFit) return get_resizeTextForBestFit(this);
+        static Method<bool> get_resizeTextForBestFit_m = GetClass().GetMethod("get_resizeTextForBestFit");
+        return get_resizeTextForBestFit_m[this]();
     }
     void SetTextResizeForBestFit(bool val){
-        static Method<void> set_resizeTextForBestFit = GetClass().GetMethod("set_resizeTextForBestFit");
-        set_resizeTextForBestFit[this](val);
+        static auto set_resizeTextForBestFit = (void(*)(void*, bool))GetExternMethod("UnityEngine.UI.Text::set_resizeTextForBestFit");
+        if (set_resizeTextForBestFit) {
+            set_resizeTextForBestFit(this, val);
+        } else {
+            static Method<void> set_resizeTextForBestFit_m = GetClass().GetMethod("set_resizeTextForBestFit");
+            set_resizeTextForBestFit_m[this](val);
+        }
     }
 
     int GetResizeTextMaxSize(){
-        static Method<int> get_resizeTextMaxSize = GetClass().GetMethod("get_resizeTextMaxSize");
-        return get_resizeTextMaxSize[this]();
+        static auto get_resizeTextMaxSize = (int(*)(void*))GetExternMethod("UnityEngine.UI.Text::get_resizeTextMaxSize");
+        if (get_resizeTextMaxSize) return get_resizeTextMaxSize(this);
+        static Method<int> get_resizeTextMaxSize_m = GetClass().GetMethod("get_resizeTextMaxSize");
+        return get_resizeTextMaxSize_m[this]();
     }
     void SetResizeTextMaxSize(int val){
-        static Method<void> set_resizeTextMaxSize = GetClass().GetMethod("set_resizeTextMaxSize");
-        set_resizeTextMaxSize[this](val);
+        static auto set_resizeTextMaxSize = (void(*)(void*, int))GetExternMethod("UnityEngine.UI.Text::set_resizeTextMaxSize");
+        if (set_resizeTextMaxSize) {
+            set_resizeTextMaxSize(this, val);
+        } else {
+            static Method<void> set_resizeTextMaxSize_m = GetClass().GetMethod("set_resizeTextMaxSize");
+            set_resizeTextMaxSize_m[this](val);
+        }
     }
     int GetResizeTextMinSize(){
-        static Method<int> get_resizeTextMinSize = GetClass().GetMethod("get_resizeTextMinSize");
-        return get_resizeTextMinSize[this]();
+        static auto get_resizeTextMinSize = (int(*)(void*))GetExternMethod("UnityEngine.UI.Text::get_resizeTextMinSize");
+        if (get_resizeTextMinSize) return get_resizeTextMinSize(this);
+        static Method<int> get_resizeTextMinSize_m = GetClass().GetMethod("get_resizeTextMinSize");
+        return get_resizeTextMinSize_m[this]();
     }
     void SetResizeTextMinSize(int val){
-        static Method<void> set_resizeTextMinSize = GetClass().GetMethod("set_resizeTextMinSize");
-        set_resizeTextMinSize[this](val);
+        static auto set_resizeTextMinSize = (void(*)(void*, int))GetExternMethod("UnityEngine.UI.Text::set_resizeTextMinSize");
+        if (set_resizeTextMinSize) {
+            set_resizeTextMinSize(this, val);
+        } else {
+            static Method<void> set_resizeTextMinSize_m = GetClass().GetMethod("set_resizeTextMinSize");
+            set_resizeTextMinSize_m[this](val);
+        }
     }
     bool GetSupportRichText() {
-        static Method<bool> get_supportRichText = GetClass().GetMethod("get_supportRichText");
-        return get_supportRichText[this]();
+        static auto get_supportRichText = (bool(*)(void*))GetExternMethod("UnityEngine.UI.Text::get_supportRichText");
+        if (get_supportRichText) return get_supportRichText(this);
+        static Method<bool> get_supportRichText_m = GetClass().GetMethod("get_supportRichText");
+        return get_supportRichText_m[this]();
     }
     void SetSupportRichText(bool val) {
-        static Method<void> set_supportRichText = GetClass().GetMethod("set_supportRichText");
-        set_supportRichText[this](val);
+        static auto set_supportRichText = (void(*)(void*, bool))GetExternMethod("UnityEngine.UI.Text::set_supportRichText");
+        if (set_supportRichText) {
+            set_supportRichText(this, val);
+        } else {
+            static Method<void> set_supportRichText_m = GetClass().GetMethod("set_supportRichText");
+            set_supportRichText_m[this](val);
+        }
     }
 
     FontStyle GetFontStyle() {
-        static Method<FontStyle> get_fontStyle = GetClass().GetMethod("get_fontStyle");
-        return get_fontStyle[this]();
+        static auto get_fontStyle = (FontStyle(*)(void*))GetExternMethod("UnityEngine.UI.Text::get_fontStyle");
+        if (get_fontStyle) return get_fontStyle(this);
+        static Method<FontStyle> get_fontStyle_m = GetClass().GetMethod("get_fontStyle");
+        return get_fontStyle_m[this]();
     }
     void SetFontStyle(FontStyle val) {
-        static Method<void> set_fontStyle = GetClass().GetMethod("set_fontStyle");
-        set_fontStyle[this](val);
+        static auto set_fontStyle = (void(*)(void*, FontStyle))GetExternMethod("UnityEngine.UI.Text::set_fontStyle");
+        if (set_fontStyle) {
+            set_fontStyle(this, val);
+        } else {
+            static Method<void> set_fontStyle_m = GetClass().GetMethod("set_fontStyle");
+            set_fontStyle_m[this](val);
+        }
     }
 };
 struct LineRenderer : Renderer{
@@ -1032,53 +1442,99 @@ struct LineRenderer : Renderer{
 
     void SetUseWorldScape(bool val){
         static auto set_useWorldSpace = (void (*)(void*, bool))GetExternMethod("UnityEngine.LineRenderer::set_useWorldSpace");
-        set_useWorldSpace(this, val);
+        if (set_useWorldSpace) {
+            set_useWorldSpace(this, val);
+        } else {
+            static Method<void> set_useWorldSpace_m = GetClass().GetMethod("set_useWorldSpace");
+            set_useWorldSpace_m[this](val);
+        }
     }
     bool GetUseWorldScape(){
         static auto get_useWorldSpace = (bool (*)(void*))GetExternMethod("UnityEngine.LineRenderer::get_useWorldSpace");
-        return get_useWorldSpace(this);
+        if (get_useWorldSpace) return get_useWorldSpace(this);
+        static Method<bool> get_useWorldSpace_m = GetClass().GetMethod("get_useWorldSpace");
+        return get_useWorldSpace_m[this]();
     }
     void SetStartWidth(float val){
         static auto set_startWidth = (void (*)(void*, float))GetExternMethod("UnityEngine.LineRenderer::set_startWidth");
-        set_startWidth(this, val);
+        if (set_startWidth) {
+            set_startWidth(this, val);
+        } else {
+            static Method<void> set_startWidth_m = GetClass().GetMethod("set_startWidth");
+            set_startWidth_m[this](val);
+        }
     }
     float GetStartWidth(){
         static auto get_startWidth = (float (*)(void*))GetExternMethod("UnityEngine.LineRenderer::get_startWidth");
-        return get_startWidth(this);
+        if (get_startWidth) return get_startWidth(this);
+        static Method<float> get_startWidth_m = GetClass().GetMethod("get_startWidth");
+        return get_startWidth_m[this]();
     }
     void SetEndWidth(float val){
         static auto set_endWidth = (void (*)(void*, float))GetExternMethod("UnityEngine.LineRenderer::set_endWidth");
-        set_endWidth(this, val);
+        if (set_endWidth) {
+            set_endWidth(this, val);
+        } else {
+            static Method<void> set_endWidth_m = GetClass().GetMethod("set_endWidth");
+            set_endWidth_m[this](val);
+        }
     }
     void SetStartColor(Color val){
-        static Method<void> set_startColor = GetClass().GetMethod("set_startColor");
-        set_startColor[this](val);
+        static auto set_startColor = (void(*)(void*, Color))GetExternMethod("UnityEngine.LineRenderer::set_startColor");
+        if (set_startColor) {
+            set_startColor(this, val);
+        } else {
+            static Method<void> set_startColor_m = GetClass().GetMethod("set_startColor");
+            set_startColor_m[this](val);
+        }
     }
     Color GetStartColor(){
-        static Method<Color> get_startColor = GetClass().GetMethod("get_startColor");
-        Color color = get_startColor[this]();
-        return color;
+        static auto get_startColor = (Color(*)(void*))GetExternMethod("UnityEngine.LineRenderer::get_startColor");
+        if (get_startColor) return get_startColor(this);
+        static Method<Color> get_startColor_m = GetClass().GetMethod("get_startColor");
+        return get_startColor_m[this]();
     }
     void SetEndColor(Color val){
-        static Method<void> set_startColor = GetClass().GetMethod("set_startColor");
-        set_startColor[this](val);
+        static auto set_endColor = (void(*)(void*, Color))GetExternMethod("UnityEngine.LineRenderer::set_endColor");
+        if (set_endColor) {
+            set_endColor(this, val);
+        } else {
+            static Method<void> set_endColor_m = GetClass().GetMethod("set_endColor");
+            set_endColor_m[this](val);
+        }
     }
     Color GetEndColor(){
-        static Method<Color> get_endColor = GetClass().GetMethod("get_endColor");
-        Color color = get_endColor[this]();
-        return color;
+        static auto get_endColor = (Color(*)(void*))GetExternMethod("UnityEngine.LineRenderer::get_endColor");
+        if (get_endColor) return get_endColor(this);
+        static Method<Color> get_endColor_m = GetClass().GetMethod("get_endColor");
+        return get_endColor_m[this]();
     }
     void SetPosition(int index, Vector3 position){
-        static Method<void> SetPosition = GetClass().GetMethod("SetPosition");
-        SetPosition[this](index, position);
+        static auto SetPosition = (void(*)(void*, int, Vector3))GetExternMethod("UnityEngine.LineRenderer::SetPosition");
+        if (SetPosition) {
+            SetPosition(this, index, position);
+        } else {
+            static Method<void> SetPositionM = GetClass().GetMethod("SetPosition");
+            SetPositionM[this](index, position);
+        }
     }
     void SetColorGradient(Gradient* gradient) {
         static auto setColorGradient = (void(*)(void*, Gradient*))GetExternMethod("UnityEngine.LineRenderer::SetColorGradient");
-        setColorGradient(this, gradient);
+        if (setColorGradient) {
+            setColorGradient(this, gradient);
+        } else {
+            static Method<void> SetColorGradientM = GetClass().GetMethod("SetColorGradient");
+            SetColorGradientM[this](gradient);
+        }
     }
     void SetPositionCount(int positionCount) {
         static auto set_positionCount = (void(*)(void*, int))GetExternMethod("UnityEngine.LineRenderer::set_positionCount");
-        set_positionCount(this, positionCount);
+        if (set_positionCount) {
+            set_positionCount(this, positionCount);
+        } else {
+            static Method<void> set_positionCount_m = GetClass().GetMethod("set_positionCount");
+            set_positionCount_m[this](positionCount);
+        }
     }
 };
 
@@ -1093,31 +1549,57 @@ struct Rigidbody : Component{
     }
     void SetUseGravity(bool useGravity){
         static auto set_useGravity = (void(*)(void*, bool))GetExternMethod("UnityEngine.Rigidbody::set_useGravity");
-        set_useGravity(this, useGravity);
+        if (set_useGravity) {
+            set_useGravity(this, useGravity);
+        } else {
+            static Method<void> set_useGravity_m = GetClass().GetMethod("set_useGravity");
+            set_useGravity_m[this](useGravity);
+        }
     }
     bool GetUseGravity(){
         static auto get_useGravity = (bool(*)(void*))GetExternMethod("UnityEngine.Rigidbody::get_useGravity");
-        return get_useGravity(this);
+        if (get_useGravity) return get_useGravity(this);
+        static Method<bool> get_useGravity_m = GetClass().GetMethod("get_useGravity");
+        return get_useGravity_m[this]();
     }
     void SetVelocity(Vector3 velocity){
-        static Method<void> set_velocity = GetClass().GetMethod("set_velocity");
-        set_velocity[this](velocity);
+        static auto set_velocity = (void(*)(void*, Vector3))GetExternMethod("UnityEngine.Rigidbody::set_velocity");
+        if (set_velocity) {
+            set_velocity(this, velocity);
+        } else {
+            static Method<void> set_velocity_m = GetClass().GetMethod("set_velocity");
+            set_velocity_m[this](velocity);
+        }
     }
     Vector3 GetVelocity(){
-        static Method<Vector3> get_velocity = GetClass().GetMethod("get_velocity");
-        return get_velocity[this]();
+        static auto get_velocity = (Vector3(*)(void*))GetExternMethod("UnityEngine.Rigidbody::get_velocity");
+        if (get_velocity) return get_velocity(this);
+        static Method<Vector3> get_velocity_m = GetClass().GetMethod("get_velocity");
+        return get_velocity_m[this]();
     }
     void AddForce(Vector3 force, ForceMode mode){
-        static Method<void> AddForce = GetClass().GetMethod("AddForce", {"force", "mode"});
-        AddForce[this](force, mode);
+        static auto AddForce = (void(*)(void*, Vector3, ForceMode))GetExternMethod("UnityEngine.Rigidbody::AddForce");
+        if (AddForce) {
+            AddForce(this, force, mode);
+        } else {
+            static Method<void> AddForceM = GetClass().GetMethod("AddForce", {"force", "mode"});
+            AddForceM[this](force, mode);
+        }
     }
     void SetIsKinematic(bool kinematic) {
         static auto set_isKinematic = (void(*)(void*, bool))GetExternMethod("UnityEngine.Rigidbody::set_isKinematic");
-        set_isKinematic(this, kinematic);
+        if (set_isKinematic) {
+            set_isKinematic(this, kinematic);
+        } else {
+            static Method<void> set_isKinematic_m = GetClass().GetMethod("set_isKinematic");
+            set_isKinematic_m[this](kinematic);
+        }
     }
     bool GetIsKinematic() {
         static auto get_isKinematic = (bool(*)(void*))GetExternMethod("UnityEngine.Rigidbody::get_isKinematic");
-        return get_isKinematic(this);
+        if (get_isKinematic) return get_isKinematic(this);
+        static Method<bool> get_isKinematic_m = GetClass().GetMethod("get_isKinematic");
+        return get_isKinematic_m[this]();
     }
 };
 struct Time{
@@ -1131,37 +1613,59 @@ struct Time{
     }
     static float GetDeltaTime(){
         static auto get_deltaTime = (float(*)())GetExternMethod("UnityEngine.Time::get_deltaTime");
-        return get_deltaTime();
+        if (get_deltaTime) return get_deltaTime();
+        static Method<float> get_deltaTime_m = GetClass().GetMethod("get_deltaTime");
+        return get_deltaTime_m();
     }
     static float GetTimeScale(){
         static auto get_timeScale = (float(*)())GetExternMethod("UnityEngine.Time::get_timeScale");
-        return get_timeScale();
+        if (get_timeScale) return get_timeScale();
+        static Method<float> get_timeScale_m = GetClass().GetMethod("get_timeScale");
+        return get_timeScale_m();
     }
     static void SetTimeScale(float scale){
         static auto set_timeScale = (void(*)(float))GetExternMethod("UnityEngine.Time::set_timeScale");
-        set_timeScale(scale);
+        if (set_timeScale) {
+            set_timeScale(scale);
+        } else {
+            static Method<void> set_timeScale_m = GetClass().GetMethod("set_timeScale");
+            set_timeScale_m(scale);
+        }
     }
     static int GetFrameCount(){
         static auto get_frameCount = (int(*)())GetExternMethod("UnityEngine.Time::get_frameCount");
-        return get_frameCount();
+        if (get_frameCount) return get_frameCount();
+        static Method<int> get_frameCount_m = GetClass().GetMethod("get_frameCount");
+        return get_frameCount_m();
     }
     static float GetTime() {
         static auto get_time = (float(*)())GetExternMethod("UnityEngine.Time::get_time");
-        return get_time();
+        if (get_time) return get_time();
+        static Method<float> get_time_m = GetClass().GetMethod("get_time");
+        return get_time_m();
     }
     static float GetUnscaledDeltaTime() {
         static auto get_time = (float(*)())GetExternMethod("UnityEngine.Time::get_unscaledDeltaTime");
-        return get_time();
+        if (get_time) return get_time();
+        static Method<float> get_time_m = GetClass().GetMethod("get_unscaledDeltaTime");
+        return get_time_m();
     }
 
     static float GetFixedDeltaTime() {
         static auto get_fixedDeltaTime = (float(*)())GetExternMethod("UnityEngine.Time::get_fixedDeltaTime");
-        return get_fixedDeltaTime();
+        if (get_fixedDeltaTime) return get_fixedDeltaTime();
+        static Method<float> get_fixedDeltaTime_m = GetClass().GetMethod("get_fixedDeltaTime");
+        return get_fixedDeltaTime_m();
     }
 
     static void SetFixedDeltaTime(float value) {
         static auto set_fixedDeltaTime = (void(*)(float))GetExternMethod("UnityEngine.Time::set_fixedDeltaTime");
-        set_fixedDeltaTime(value);
+        if (set_fixedDeltaTime) {
+            set_fixedDeltaTime(value);
+        } else {
+            static Method<void> set_fixedDeltaTime_m = GetClass().GetMethod("set_fixedDeltaTime");
+            set_fixedDeltaTime_m(value);
+        }
     }
 };
 struct Collider : Component{
@@ -1176,23 +1680,39 @@ struct Collider : Component{
 
     bool GetIsTrigger(){
         static auto get_isTrigger = (bool(*)(void*))GetExternMethod("UnityEngine.Collider::get_isTrigger");
-        return get_isTrigger(this);
+        if (get_isTrigger) return get_isTrigger(this);
+        static Method<bool> get_isTrigger_m = GetClass().GetMethod("get_isTrigger");
+        return get_isTrigger_m[this]();
     }
     void SetIsTrigger(bool val){
         static auto set_isTrigger = (void(*)(void*, bool))GetExternMethod("UnityEngine.Collider::set_isTrigger");
-        set_isTrigger(this, val);
+        if (set_isTrigger) {
+            set_isTrigger(this, val);
+        } else {
+            static Method<void> set_isTrigger_m = GetClass().GetMethod("set_isTrigger");
+            set_isTrigger_m[this](val);
+        }
     }
     Rigidbody* GetAttachedRigidbody(){
         static auto get_attachedRigidbody = (Rigidbody*(*)(void*))GetExternMethod("UnityEngine.Collider::get_attachedRigidbody");
-        return get_attachedRigidbody(this);
+        if (get_attachedRigidbody) return get_attachedRigidbody(this);
+        static Method<Rigidbody*> get_attachedRigidbody_m = GetClass().GetMethod("get_attachedRigidbody");
+        return get_attachedRigidbody_m[this]();
     }
     void SetEnabled(bool val){
         static auto set_enabled = (void(*)(void*, bool))GetExternMethod("UnityEngine.Collider::set_enabled");
-        set_enabled(this, val);
+        if (set_enabled) {
+            set_enabled(this, val);
+        } else {
+            static Method<void> set_enabled_m = GetClass().GetMethod("set_enabled");
+            set_enabled_m[this](val);
+        }
     }
     bool GetEnabled(){
         static auto get_enabled = (bool(*)(void*))GetExternMethod("UnityEngine.Collider::get_enabled");
-        return get_enabled(this);
+        if (get_enabled) return get_enabled(this);
+        static Method<bool> get_enabled_m = GetClass().GetMethod("get_enabled");
+        return get_enabled_m[this]();
     }
 };
 struct SphereCollider : Collider{
@@ -1205,16 +1725,25 @@ struct SphereCollider : Collider{
         return mclass;
     }
     Vector3 GetCenter(){
-        static Method<Vector3> get_center = GetClass().GetMethod("get_center");
-        return get_center[this]();
+        static auto get_center = (Vector3(*)(void*))GetExternMethod("UnityEngine.SphereCollider::get_center");
+        if (get_center) return get_center(this);
+        static Method<Vector3> get_center_m = GetClass().GetMethod("get_center");
+        return get_center_m[this]();
     }
     float GetRadius(){
         static auto get_radius = (float(*)(void*)) GetExternMethod("UnityEngine.SphereCollider::get_radius");
-        return get_radius(this);
+        if (get_radius) return get_radius(this);
+        static Method<float> get_radius_m = GetClass().GetMethod("get_radius");
+        return get_radius_m[this]();
     }
     void SetRadius(float val){
         static auto set_radius = (void(*)(void*, float)) GetExternMethod("UnityEngine.SphereCollider::set_radius");
-        set_radius(this, val);
+        if (set_radius) {
+            set_radius(this, val);
+        } else {
+            static Method<void> set_radius_m = GetClass().GetMethod("set_radius");
+            set_radius_m[this](val);
+        }
     }
 };
 struct BoxCollider : Collider{
@@ -1227,16 +1756,25 @@ struct BoxCollider : Collider{
         return mclass;
     }
     Vector3 GetCenter(){
-        static Method<Vector3> get_center = GetClass().GetMethod("get_center");
-        return get_center[this]();
+        static auto get_center = (Vector3(*)(void*))GetExternMethod("UnityEngine.BoxCollider::get_center");
+        if (get_center) return get_center(this);
+        static Method<Vector3> get_center_m = GetClass().GetMethod("get_center");
+        return get_center_m[this]();
     }
     Vector3 GetSize(){
-        static Method<Vector3> get_size = GetClass().GetMethod("get_size");
-        return get_size[this]();
+        static auto get_size = (Vector3(*)(void*))GetExternMethod("UnityEngine.BoxCollider::get_size");
+        if (get_size) return get_size(this);
+        static Method<Vector3> get_size_m = GetClass().GetMethod("get_size");
+        return get_size_m[this]();
     }
     void SetSize(Vector3 val){
-        static Method<void> set_size = GetClass().GetMethod("set_size");
-        return set_size[this](val);
+        static auto set_size = (void(*)(void*, Vector3))GetExternMethod("UnityEngine.BoxCollider::set_size");
+        if (set_size) {
+            set_size(this, val);
+        } else {
+            static Method<void> set_size_m = GetClass().GetMethod("set_size");
+            set_size_m[this](val);
+        }
     }
 };
 struct MeshCollider : Collider{
@@ -1269,24 +1807,34 @@ struct Resources{
         return mclass;
     }
     static Object* Load(std::string path){
-        static Method<Object*> Load = GetClass().GetMethod("Load", 1);
-        return Load(path);
+        static auto Load = (Object*(*)(String*))GetExternMethod("UnityEngine.Resources::Load");
+        if (Load) return Load(CreateMonoString(path));
+        static Method<Object*> LoadM = GetClass().GetMethod("Load", 1);
+        return LoadM(CreateMonoString(path));
     }
     static Object* Load(std::string path, MonoType* systemTypeInstance){
-        static Method<Object*> Load = GetClass().GetMethod("Load", 2);
-        return Load(CreateMonoString(path), systemTypeInstance);
+        static auto Load = (Object*(*)(String*, MonoType*))GetExternMethod("UnityEngine.Resources::Load");
+        if (Load) return Load(CreateMonoString(path), systemTypeInstance);
+        static Method<Object*> LoadM = GetClass().GetMethod("Load", 2);
+        return LoadM(CreateMonoString(path), systemTypeInstance);
     }
     static Array<Object*>* LoadAll(std::string path, MonoType* systemTypeInstance){
-        static Method<Array<Object*>*> LoadAll = GetClass().GetMethod("LoadAll", 2);
-        return LoadAll(CreateMonoString(path), systemTypeInstance);
+        static auto LoadAll = (Array<Object*>*(*)(String*, MonoType*))GetExternMethod("UnityEngine.Resources::LoadAll");
+        if (LoadAll) return LoadAll(CreateMonoString(path), systemTypeInstance);
+        static Method<Array<Object*>*> LoadAllM = GetClass().GetMethod("LoadAll", 2);
+        return LoadAllM(CreateMonoString(path), systemTypeInstance);
     }
     static Array<Object*>* FindObjectsOfTypeAll(MonoType* type) {
-        static Method<Array<Object*>*> FindObjectsOfTypeAll = GetClass().GetMethod("FindObjectsOfTypeAll", 1);
-        return FindObjectsOfTypeAll(type);
+        static auto FindObjectsOfTypeAll = (Array<Object*>*(*)(MonoType*))GetExternMethod("UnityEngine.Resources::FindObjectsOfTypeAll");
+        if (FindObjectsOfTypeAll) return FindObjectsOfTypeAll(type);
+        static Method<Array<Object*>*> FindObjectsOfTypeAllM = GetClass().GetMethod("FindObjectsOfTypeAll", 1);
+        return FindObjectsOfTypeAllM(type);
     }
     static Object* GetBuiltinResource(MonoType* type, std::string path){
         static auto GetBuiltinResource = (Object *(*)(MonoType*, String*))GetExternMethod("UnityEngine.Resources::GetBuiltinResource");
-        return GetBuiltinResource(type, CreateMonoString(path));
+        if (GetBuiltinResource) return GetBuiltinResource(type, CreateMonoString(path));
+        static Method<Object*> GetBuiltinResourceM = GetClass().GetMethod("GetBuiltinResource");
+        return GetBuiltinResourceM(type, CreateMonoString(path));
     }
 };
 struct AssetBundle : NamedObject{
@@ -1299,64 +1847,96 @@ struct AssetBundle : NamedObject{
         return mclass;
     }
     static AssetBundle* LoadFromFile(std::string path){
-        static Method<AssetBundle*> LoadFromFile = GetClass().GetMethod("LoadFromFile", 1);
-        return LoadFromFile(CreateMonoString(path));
+        static auto LoadFromFile = (AssetBundle*(*)(String*))GetExternMethod("UnityEngine.AssetBundle::LoadFromFile");
+        if (LoadFromFile) return LoadFromFile(CreateMonoString(path));
+        static Method<AssetBundle*> LoadFromFileM = GetClass().GetMethod("LoadFromFile", 1);
+        return LoadFromFileM(CreateMonoString(path));
     }
 
     static AssetBundle* LoadFromMemory(Array<uint8_t>* binary) {
-        static Method<AssetBundle*> LoadFromMemory = GetClass().GetMethod("LoadFromMemory", 1);
-        return LoadFromMemory(binary);
+        static auto LoadFromMemory = (AssetBundle*(*)(Array<uint8_t>*))GetExternMethod("UnityEngine.AssetBundle::LoadFromMemory");
+        if (LoadFromMemory) return LoadFromMemory(binary);
+        static Method<AssetBundle*> LoadFromMemoryM = GetClass().GetMethod("LoadFromMemory", 1);
+        return LoadFromMemoryM(binary);
     }
 
     void Unload(bool unloadAllLoadedObjects){
         static auto Unload = (void (*)(AssetBundle *, bool))GetExternMethod("UnityEngine.AssetBundle::Unload");
-        Unload(this, unloadAllLoadedObjects);
+        if (Unload) {
+            Unload(this, unloadAllLoadedObjects);
+        } else {
+            static Method<void> UnloadM = GetClass().GetMethod("Unload");
+            UnloadM[this](unloadAllLoadedObjects);
+        }
     }
 
     Object* LoadAsset(std::string name){
-        static Method<Object*> LoadAsset = GetClass().GetMethod("LoadAsset", 1);
-        return LoadAsset[this](CreateMonoString(name));
+        static auto LoadAsset = (Object*(*)(void*, String*))GetExternMethod("UnityEngine.AssetBundle::LoadAsset");
+        if (LoadAsset) return LoadAsset(this, CreateMonoString(name));
+        static Method<Object*> LoadAssetM = GetClass().GetMethod("LoadAsset", 1);
+        return LoadAssetM[this](CreateMonoString(name));
     }
 
     Object* LoadAsset(std::string name, MonoType* type){
-        static Method<Object*> LoadAsset = GetClass().GetMethod("LoadAsset", 2);
-        return LoadAsset[this](CreateMonoString(name), type);
+        static auto LoadAsset = (Object*(*)(void*, String*, MonoType*))GetExternMethod("UnityEngine.AssetBundle::LoadAsset");
+        if (LoadAsset) return LoadAsset(this, CreateMonoString(name), type);
+        static Method<Object*> LoadAssetM = GetClass().GetMethod("LoadAsset", 2);
+        return LoadAssetM[this](CreateMonoString(name), type);
     }
 
     Array<Object*>* LoadAllAssets() {
-        static Method<Array<Object*>*> LoadAllAssets = GetClass().GetMethod("LoadAllAssets");
-        return LoadAllAssets[this]();
+        static auto LoadAllAssets = (Array<Object*>*(*)(void*))GetExternMethod("UnityEngine.AssetBundle::LoadAllAssets");
+        if (LoadAllAssets) return LoadAllAssets(this);
+        static Method<Array<Object*>*> LoadAllAssetsM = GetClass().GetMethod("LoadAllAssets");
+        return LoadAllAssetsM[this]();
     }
 
     Array<Object*>* LoadAllAssets(MonoType* type) {
-        static Method<Array<Object*>*> LoadAllAssets = GetClass().GetMethod("LoadAllAssets", 1);
-        return LoadAllAssets[this](type);
+        static auto LoadAllAssets = (Array<Object*>*(*)(void*, MonoType*))GetExternMethod("UnityEngine.AssetBundle::LoadAllAssets");
+        if (LoadAllAssets) return LoadAllAssets(this, type);
+        static Method<Array<Object*>*> LoadAllAssetsM = GetClass().GetMethod("LoadAllAssets", 1);
+        return LoadAllAssetsM[this](type);
     }
 
     Array<String*>* GetAllAssetNames() {
-        static Method<Array<String*>*> GetAllAssetNames = GetClass().GetMethod("GetAllAssetNames");
-        return GetAllAssetNames[this]();
+        static auto GetAllAssetNames = (Array<String*>*(*)(void*))GetExternMethod("UnityEngine.AssetBundle::GetAllAssetNames");
+        if (GetAllAssetNames) return GetAllAssetNames(this);
+        static Method<Array<String*>*> GetAllAssetNamesM = GetClass().GetMethod("GetAllAssetNames");
+        return GetAllAssetNamesM[this]();
     }
 
     std::string GetName() {
-        static Method<String*> get_name = GetClass().GetMethod("get_name");
-        auto name = get_name[this]();
-        return name->str();
+        static auto get_name = (String*(*)(void*))GetExternMethod("UnityEngine.Object::get_name");
+        if (get_name) return get_name(this)->str();
+        static Method<String*> get_name_m = GetClass().GetMethod("get_name");
+        return get_name_m[this]()->str();
     }
 
     void SetName(std::string name) {
-        static Method<void> set_name = GetClass().GetMethod("set_name");
-        set_name[this](CreateMonoString(name));
+        static auto set_name = (void(*)(void*, String*))GetExternMethod("UnityEngine.Object::set_name");
+        if (set_name) {
+            set_name(this, CreateMonoString(name));
+        } else {
+            static Method<void> set_name_m = GetClass().GetMethod("set_name");
+            set_name_m[this](CreateMonoString(name));
+        }
     }
 
     bool GetIsStreamedSceneAssetBundle() {
-        static Method<bool> get_isStreamedSceneAssetBundle = GetClass().GetMethod("get_isStreamedSceneAssetBundle");
-        return get_isStreamedSceneAssetBundle[this]();
+        static auto get_isStreamedSceneAssetBundle = (bool(*)(void*))GetExternMethod("UnityEngine.AssetBundle::get_isStreamedSceneAssetBundle");
+        if (get_isStreamedSceneAssetBundle) return get_isStreamedSceneAssetBundle(this);
+        static Method<bool> get_isStreamedSceneAssetBundle_m = GetClass().GetMethod("get_isStreamedSceneAssetBundle");
+        return get_isStreamedSceneAssetBundle_m[this]();
     }
 
     static void UnloadAllAssetBundles(bool unloadAllObjects) {
-        static Method<void> UnloadAllAssetBundles = GetClass().GetMethod("UnloadAllAssetBundles", 1);
-        UnloadAllAssetBundles(unloadAllObjects);
+        static auto UnloadAllAssetBundles = (void(*)(bool))GetExternMethod("UnityEngine.AssetBundle::UnloadAllAssetBundles");
+        if (UnloadAllAssetBundles) {
+            UnloadAllAssetBundles(unloadAllObjects);
+        } else {
+            static Method<void> UnloadAllAssetBundlesM = GetClass().GetMethod("UnloadAllAssetBundles", 1);
+            UnloadAllAssetBundlesM(unloadAllObjects);
+        }
     }
 };
 struct Physics{
@@ -1369,25 +1949,38 @@ struct Physics{
         return mclass;
     }
     static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo){
-        static Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo"});
-        return Raycast(origin, direction, &hitInfo);
+        static auto Raycast = (bool(*)(Vector3, Vector3, RaycastHit*))GetExternMethod("UnityEngine.Physics::Raycast");
+        if (Raycast) return Raycast(origin, direction, &hitInfo);
+        static Method<bool> RaycastM = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo"});
+        return RaycastM(origin, direction, &hitInfo);
     }
     static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo, float maxDistance){
-        static Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance"});
-        return Raycast(origin, direction, &hitInfo, maxDistance);
+        static auto Raycast = (bool(*)(Vector3, Vector3, RaycastHit*, float))GetExternMethod("UnityEngine.Physics::Raycast");
+        if (Raycast) return Raycast(origin, direction, &hitInfo, maxDistance);
+        static Method<bool> RaycastM = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance"});
+        return RaycastM(origin, direction, &hitInfo, maxDistance);
     }
     static bool Raycast(Vector3 origin, Vector3 direction, RaycastHit& hitInfo, float maxDistance, int layerMask){
-        static Method<bool> Raycast = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance", "layerMask"});
-        return Raycast(origin, direction, &hitInfo, maxDistance, layerMask);
+        static auto Raycast = (bool(*)(Vector3, Vector3, RaycastHit*, float, int))GetExternMethod("UnityEngine.Physics::Raycast");
+        if (Raycast) return Raycast(origin, direction, &hitInfo, maxDistance, layerMask);
+        static Method<bool> RaycastM = GetClass().GetMethod("Raycast", {"origin","direction","hitInfo", "maxDistance", "layerMask"});
+        return RaycastM(origin, direction, &hitInfo, maxDistance, layerMask);
     }
 
     static void SetGravity(Vector3 gravity){
-        static Method<void> set_gravity = GetClass().GetMethod("set_gravity");
-        set_gravity(gravity);
+        static auto set_gravity = (void(*)(Vector3))GetExternMethod("UnityEngine.Physics::set_gravity");
+        if (set_gravity) {
+            set_gravity(gravity);
+        } else {
+            static Method<void> set_gravity_m = GetClass().GetMethod("set_gravity");
+            set_gravity_m(gravity);
+        }
     }
     static Vector3 GetGravity(){
-        static Method<Vector3> get_gravity = GetClass().GetMethod("get_gravity");
-        return get_gravity();
+        static auto get_gravity = (Vector3(*)())GetExternMethod("UnityEngine.Physics::get_gravity");
+        if (get_gravity) return get_gravity();
+        static Method<Vector3> get_gravity_m = GetClass().GetMethod("get_gravity");
+        return get_gravity_m();
     }
 };
 
@@ -1402,13 +1995,17 @@ struct Texture2D : NamedObject {
     }
 
     static Texture2D* Create(int width, int height) {
-        static Method<Texture2D*> Create = GetClass().GetMethod("Create", 2);
-        return Create(width, height);
+        static auto Create = (Texture2D*(*)(int, int))GetExternMethod("UnityEngine.Texture2D::Create");
+        if (Create) return Create(width, height);
+        static Method<Texture2D*> CreateM = GetClass().GetMethod("Create", 2);
+        return CreateM(width, height);
     }
 
     static Texture2D* Create(int width, int height, TextureFormat format) {
-        static Method<Texture2D*> Create = GetClass().GetMethod("Create", 3);
-        return Create(width, height, format);
+        static auto Create = (Texture2D*(*)(int, int, TextureFormat))GetExternMethod("UnityEngine.Texture2D::Create");
+        if (Create) return Create(width, height, format);
+        static Method<Texture2D*> CreateM = GetClass().GetMethod("Create", 3);
+        return CreateM(width, height, format);
     }
 };
 
@@ -1423,33 +2020,54 @@ struct LightmapData : Object {
     }
 
     Texture2D* GetLightmapColor() {
-        static Method<Texture2D*> get_lightmapColor = GetClass().GetMethod("get_lightmapColor");
-        return get_lightmapColor[this]();
+        static auto get_lightmapColor = (Texture2D*(*)(void*))GetExternMethod("UnityEngine.LightmapData::get_lightmapColor");
+        if (get_lightmapColor) return get_lightmapColor(this);
+        static Method<Texture2D*> get_lightmapColor_m = GetClass().GetMethod("get_lightmapColor");
+        return get_lightmapColor_m[this]();
     }
 
     void SetLightmapColor(Texture2D* texture) {
-        static Method<void> set_lightmapColor = GetClass().GetMethod("set_lightmapColor");
-        set_lightmapColor[this](texture);
+        static auto set_lightmapColor = (void(*)(void*, Texture2D*))GetExternMethod("UnityEngine.LightmapData::set_lightmapColor");
+        if (set_lightmapColor) {
+            set_lightmapColor(this, texture);
+        } else {
+            static Method<void> set_lightmapColor_m = GetClass().GetMethod("set_lightmapColor");
+            set_lightmapColor_m[this](texture);
+        }
     }
 
     Texture2D* GetLightmapDir() {
-        static Method<Texture2D*> get_lightmapDir = GetClass().GetMethod("get_lightmapDir");
-        return get_lightmapDir[this]();
+        static auto get_lightmapDir = (Texture2D*(*)(void*))GetExternMethod("UnityEngine.LightmapData::get_lightmapDir");
+        if (get_lightmapDir) return get_lightmapDir(this);
+        static Method<Texture2D*> get_lightmapDir_m = GetClass().GetMethod("get_lightmapDir");
+        return get_lightmapDir_m[this]();
     }
 
     void SetLightmapDir(Texture2D* texture) {
-        static Method<void> set_lightmapDir = GetClass().GetMethod("set_lightmapDir");
-        set_lightmapDir[this](texture);
+        static auto set_lightmapDir = (void(*)(void*, Texture2D*))GetExternMethod("UnityEngine.LightmapData::set_lightmapDir");
+        if (set_lightmapDir) {
+            set_lightmapDir(this, texture);
+        } else {
+            static Method<void> set_lightmapDir_m = GetClass().GetMethod("set_lightmapDir");
+            set_lightmapDir_m[this](texture);
+        }
     }
 
     Texture2D* GetShadowMask() {
-        static Method<Texture2D*> get_shadowMask = GetClass().GetMethod("get_shadowMask");
-        return get_shadowMask[this]();
+        static auto get_shadowMask = (Texture2D*(*)(void*))GetExternMethod("UnityEngine.LightmapData::get_shadowMask");
+        if (get_shadowMask) return get_shadowMask(this);
+        static Method<Texture2D*> get_shadowMask_m = GetClass().GetMethod("get_shadowMask");
+        return get_shadowMask_m[this]();
     }
 
     void SetShadowMask(Texture2D* texture) {
-        static Method<void> set_shadowMask = GetClass().GetMethod("set_shadowMask");
-        set_shadowMask[this](texture);
+        static auto set_shadowMask = (void(*)(void*, Texture2D*))GetExternMethod("UnityEngine.LightmapData::set_shadowMask");
+        if (set_shadowMask) {
+            set_shadowMask(this, texture);
+        } else {
+            static Method<void> set_shadowMask_m = GetClass().GetMethod("set_shadowMask");
+            set_shadowMask_m[this](texture);
+        }
     }
 };
 
@@ -1464,17 +2082,23 @@ struct LightmapSettings {
     }
 
     static Array<LightmapData*>* GetLightmaps() {
-        static Method<Array<LightmapData*>*> get_lightmaps = GetClass().GetMethod("get_lightmaps");
-        return get_lightmaps();
+        static auto get_lightmaps = (Array<LightmapData*>*(*)())GetExternMethod("UnityEngine.LightmapSettings::get_lightmaps");
+        if (get_lightmaps) return get_lightmaps();
+        static Method<Array<LightmapData*>*> get_lightmaps_m = GetClass().GetMethod("get_lightmaps");
+        return get_lightmaps_m();
     }
 
     static void SetLightmaps(Array<LightmapData*>* lightmaps) {
-        static Method<void> set_lightmaps = GetClass().GetMethod("set_lightmaps");
-        set_lightmaps(lightmaps);
+        static auto set_lightmaps = (void(*)(Array<LightmapData*>*))GetExternMethod("UnityEngine.LightmapSettings::set_lightmaps");
+        if (set_lightmaps) {
+            set_lightmaps(lightmaps);
+        } else {
+            static Method<void> set_lightmaps_m = GetClass().GetMethod("set_lightmaps");
+            set_lightmaps_m(lightmaps);
+        }
     }
 };
 
-// Structs
 struct LayerMask{
     int m_Mask;
 
@@ -1492,11 +2116,15 @@ struct LayerMask{
     };
     static String* LayerToName(int layer){
         static auto layerToName = (String*(*)(int))GetExternMethod("UnityEngine.LayerMask::LayerToName");
-        return layerToName(layer);
+        if (layerToName) return layerToName(layer);
+        static Method<String*> layerToNameM = GetClass().GetMethod("LayerToName");
+        return layerToNameM(layer);
     };
     static int NameToLayer(BNM::Structures::Mono::String * name) {
         static auto nameToLayer = (int(*)(String*))GetExternMethod("UnityEngine.LayerMask::NameToLayer");
-        return nameToLayer(name);
+        if (nameToLayer) return nameToLayer(name);
+        static Method<int> nameToLayerM = GetClass().GetMethod("NameToLayer");
+        return nameToLayerM(name);
     }
 };
 
@@ -1511,13 +2139,20 @@ struct Skybox : Behaviour {
     }
 
     Material* GetMaterial() {
-        static Method<Material*> get_material = GetClass().GetMethod("get_material");
-        return get_material[this]();
+        static auto get_material = (Material*(*)(void*))GetExternMethod("UnityEngine.Skybox::get_material");
+        if (get_material) return get_material(this);
+        static Method<Material*> get_material_m = GetClass().GetMethod("get_material");
+        return get_material_m[this]();
     }
 
     void SetMaterial(Material* material) {
-        static Method<void> set_material = GetClass().GetMethod("set_material");
-        set_material[this](material);
+        static auto set_material = (void(*)(void*, Material*))GetExternMethod("UnityEngine.Skybox::set_material");
+        if (set_material) {
+            set_material(this, material);
+        } else {
+            static Method<void> set_material_m = GetClass().GetMethod("set_material");
+            set_material_m[this](material);
+        }
     }
 };
 
@@ -1532,74 +2167,104 @@ struct Sprite : NamedObject {
     }
 
     static Sprite* Create(Texture2D* texture) {
-        static Method<Sprite*> Create = GetClass().GetMethod("Create", 1);
-        return Create(texture);
+        static auto Create = (Sprite*(*)(Texture2D*))GetExternMethod("UnityEngine.Sprite::Create");
+        if (Create) return Create(texture);
+        static Method<Sprite*> CreateM = GetClass().GetMethod("Create", 1);
+        return CreateM(texture);
     }
 
     static Sprite* Create(Texture2D* texture, Rect rect, Vector2 pivot) {
-        static Method<Sprite*> Create = GetClass().GetMethod("Create", 3);
-        return Create(texture, rect, pivot);
+        static auto Create = (Sprite*(*)(Texture2D*, Rect, Vector2))GetExternMethod("UnityEngine.Sprite::Create");
+        if (Create) return Create(texture, rect, pivot);
+        static Method<Sprite*> CreateM = GetClass().GetMethod("Create", 3);
+        return CreateM(texture, rect, pivot);
     }
 
     static Sprite* Create(Texture2D* texture, Rect rect, Vector2 pivot, float pixelsPerUnit) {
-        static Method<Sprite*> Create = GetClass().GetMethod("Create", 4);
-        return Create(texture, rect, pivot, pixelsPerUnit);
+        static auto Create = (Sprite*(*)(Texture2D*, Rect, Vector2, float))GetExternMethod("UnityEngine.Sprite::Create");
+        if (Create) return Create(texture, rect, pivot, pixelsPerUnit);
+        static Method<Sprite*> CreateM = GetClass().GetMethod("Create", 4);
+        return CreateM(texture, rect, pivot, pixelsPerUnit);
     }
 
     static Sprite* Create(Texture2D* texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude) {
-        static Method<Sprite*> Create = GetClass().GetMethod("Create", 5);
-        return Create(texture, rect, pivot, pixelsPerUnit, extrude);
+        static auto Create = (Sprite*(*)(Texture2D*, Rect, Vector2, float, uint))GetExternMethod("UnityEngine.Sprite::Create");
+        if (Create) return Create(texture, rect, pivot, pixelsPerUnit, extrude);
+        static Method<Sprite*> CreateM = GetClass().GetMethod("Create", 5);
+        return CreateM(texture, rect, pivot, pixelsPerUnit, extrude);
     }
 
     static Sprite* Create(Texture2D* texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude, SpriteMeshType meshType) {
-        static Method<Sprite*> Create = GetClass().GetMethod("Create", 6);
-        return Create(texture, rect, pivot, pixelsPerUnit, extrude, meshType);
+        static auto Create = (Sprite*(*)(Texture2D*, Rect, Vector2, float, uint, SpriteMeshType))GetExternMethod("UnityEngine.Sprite::Create");
+        if (Create) return Create(texture, rect, pivot, pixelsPerUnit, extrude, meshType);
+        static Method<Sprite*> CreateM = GetClass().GetMethod("Create", 6);
+        return CreateM(texture, rect, pivot, pixelsPerUnit, extrude, meshType);
     }
 
     static Sprite* Create(Texture2D* texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude, SpriteMeshType meshType, Vector4 border) {
-        static Method<Sprite*> Create = GetClass().GetMethod("Create", 7);
-        return Create(texture, rect, pivot, pixelsPerUnit, extrude, meshType, border);
+        static auto Create = (Sprite*(*)(Texture2D*, Rect, Vector2, float, uint, SpriteMeshType, Vector4))GetExternMethod("UnityEngine.Sprite::Create");
+        if (Create) return Create(texture, rect, pivot, pixelsPerUnit, extrude, meshType, border);
+        static Method<Sprite*> CreateM = GetClass().GetMethod("Create", 7);
+        return CreateM(texture, rect, pivot, pixelsPerUnit, extrude, meshType, border);
     }
 
     Texture2D* GetTexture() {
-        static Method<Texture2D*> get_texture = GetClass().GetMethod("get_texture");
-        return get_texture[this]();
+        static auto get_texture = (Texture2D*(*)(void*))GetExternMethod("UnityEngine.Sprite::get_texture");
+        if (get_texture) return get_texture(this);
+        static Method<Texture2D*> get_texture_m = GetClass().GetMethod("get_texture");
+        return get_texture_m[this]();
     }
 
     Rect GetRect() {
-        static Method<Rect> get_rect = GetClass().GetMethod("get_rect");
-        return get_rect[this]();
+        static auto get_rect = (Rect(*)(void*))GetExternMethod("UnityEngine.Sprite::get_rect");
+        if (get_rect) return get_rect(this);
+        static Method<Rect> get_rect_m = GetClass().GetMethod("get_rect");
+        return get_rect_m[this]();
     }
 
     Vector2 GetPivot() {
-        static Method<Vector2> get_pivot = GetClass().GetMethod("get_pivot");
-        return get_pivot[this]();
+        static auto get_pivot = (Vector2(*)(void*))GetExternMethod("UnityEngine.Sprite::get_pivot");
+        if (get_pivot) return get_pivot(this);
+        static Method<Vector2> get_pivot_m = GetClass().GetMethod("get_pivot");
+        return get_pivot_m[this]();
     }
 
     float GetPixelsPerUnit() {
-        static Method<float> get_pixelsPerUnit = GetClass().GetMethod("get_pixelsPerUnit");
-        return get_pixelsPerUnit[this]();
+        static auto get_pixelsPerUnit = (float(*)(void*))GetExternMethod("UnityEngine.Sprite::get_pixelsPerUnit");
+        if (get_pixelsPerUnit) return get_pixelsPerUnit(this);
+        static Method<float> get_pixelsPerUnit_m = GetClass().GetMethod("get_pixelsPerUnit");
+        return get_pixelsPerUnit_m[this]();
     }
 
     Vector4 GetBorder() {
-        static Method<Vector4> get_border = GetClass().GetMethod("get_border");
-        return get_border[this]();
+        static auto get_border = (Vector4(*)(void*))GetExternMethod("UnityEngine.Sprite::get_border");
+        if (get_border) return get_border(this);
+        static Method<Vector4> get_border_m = GetClass().GetMethod("get_border");
+        return get_border_m[this]();
     }
 
     Vector2 GetBounds() {
-        static Method<Vector2> get_bounds = GetClass().GetMethod("get_bounds");
-        return get_bounds[this]();
+        static auto get_bounds = (Vector2(*)(void*))GetExternMethod("UnityEngine.Sprite::get_bounds");
+        if (get_bounds) return get_bounds(this);
+        static Method<Vector2> get_bounds_m = GetClass().GetMethod("get_bounds");
+        return get_bounds_m[this]();
     }
 
     std::string GetName() {
-        static Method<String*> get_name = GetClass().GetMethod("get_name");
-        auto name = get_name[this]();
-        return name->str();
+        static auto get_name = (String*(*)(void*))GetExternMethod("UnityEngine.Object::get_name");
+        if (get_name) return get_name(this)->str();
+        static Method<String*> get_name_m = GetClass().GetMethod("get_name");
+        return get_name_m[this]()->str();
     }
 
     void SetName(std::string name) {
-        static Method<void> set_name = GetClass().GetMethod("set_name");
-        set_name[this](CreateMonoString(name));
+        static auto set_name = (void(*)(void*, String*))GetExternMethod("UnityEngine.Object::set_name");
+        if (set_name) {
+            set_name(this, CreateMonoString(name));
+        } else {
+            static Method<void> set_name_m = GetClass().GetMethod("set_name");
+            set_name_m[this](CreateMonoString(name));
+        }
     }
 };
 
@@ -1615,20 +2280,37 @@ struct Animator : Behaviour {
 
     void SetEnabled(bool enabled){
         static auto set_enabled = (void(*)(void*, bool))GetExternMethod("UnityEngine.Behaviour::set_enabled");
-        set_enabled(this, enabled);
+        if (set_enabled) {
+            set_enabled(this, enabled);
+        } else {
+            static Method<void> set_enabled_m = GetClass().GetMethod("set_enabled");
+            set_enabled_m[this](enabled);
+        }
     }
     bool GetEnabled(){
         static auto get_enabled = (bool(*)(void*))GetExternMethod("UnityEngine.Behaviour::get_enabled");
-        return get_enabled(this);
+        if (get_enabled) return get_enabled(this);
+        static Method<bool> get_enabled_m = GetClass().GetMethod("get_enabled");
+        return get_enabled_m[this]();
     }
     void Play(std::string stateName) {
-        static Method<void> Play = GetClass().GetMethod("Play", 1);
-        Play[this](CreateMonoString(stateName));
+        static auto Play = (void(*)(void*, String*))GetExternMethod("UnityEngine.Animator::Play");
+        if (Play) {
+            Play(this, CreateMonoString(stateName));
+        } else {
+            static Method<void> PlayM = GetClass().GetMethod("Play", 1);
+            PlayM[this](CreateMonoString(stateName));
+        }
     }
 
     void Stop() {
-        static Method<void> Stop = GetClass().GetMethod("Stop");
-        Stop[this]();
+        static auto Stop = (void(*)(void*))GetExternMethod("UnityEngine.Animator::Stop");
+        if (Stop) {
+            Stop(this);
+        } else {
+            static Method<void> StopM = GetClass().GetMethod("Stop");
+            StopM[this]();
+        }
     }
 };
 
@@ -1649,12 +2331,16 @@ struct Matrix4x4 {
 
     static Matrix4x4 identity() {
         static auto identity = (Matrix4x4(*)())GetExternMethod("UnityEngine.Matrix4x4::get_identity");
-        return identity();
+        if (identity) return identity();
+        static Method<Matrix4x4> identityM = GetClass().GetMethod("get_identity");
+        return identityM();
     }
 
     static Matrix4x4 zero() {
         static auto zero = (Matrix4x4(*)())GetExternMethod("UnityEngine.Matrix4x4::get_zero");
-        return zero();
+        if (zero) return zero();
+        static Method<Matrix4x4> zeroM = GetClass().GetMethod("get_zero");
+        return zeroM();
     }
 };
 
@@ -1680,58 +2366,101 @@ struct MonoBehaviour : Behaviour {
     }
 
     void* StartCoroutine(String* methodName) {
-        static Method<void*> StartCoroutine = GetClass().GetMethod("StartCoroutine", 1);
-        return StartCoroutine[this](methodName);
+        static auto StartCoroutine = (void*(*)(void*, String*))GetExternMethod("UnityEngine.MonoBehaviour::StartCoroutine");
+        if (StartCoroutine) return StartCoroutine(this, methodName);
+        static Method<void*> StartCoroutineM = GetClass().GetMethod("StartCoroutine", 1);
+        return StartCoroutineM[this](methodName);
     }
 
     void* StartCoroutine(String* methodName, Object* value) {
-        static Method<void*> StartCoroutine = GetClass().GetMethod("StartCoroutine", 2);
-        return StartCoroutine[this](methodName, value);
+        static auto StartCoroutine = (void*(*)(void*, String*, Object*))GetExternMethod("UnityEngine.MonoBehaviour::StartCoroutine");
+        if (StartCoroutine) return StartCoroutine(this, methodName, value);
+        static Method<void*> StartCoroutineM = GetClass().GetMethod("StartCoroutine", 2);
+        return StartCoroutineM[this](methodName, value);
     }
 
     void StopCoroutine(String* methodName) {
-        static Method<void> StopCoroutine = GetClass().GetMethod("StopCoroutine", 1);
-        StopCoroutine[this](methodName);
+        static auto StopCoroutine = (void(*)(void*, String*))GetExternMethod("UnityEngine.MonoBehaviour::StopCoroutine");
+        if (StopCoroutine) {
+            StopCoroutine(this, methodName);
+        } else {
+            static Method<void> StopCoroutineM = GetClass().GetMethod("StopCoroutine", 1);
+            StopCoroutineM[this](methodName);
+        }
     }
 
     void StopCoroutine(void* routine) {
-        static Method<void> StopCoroutine = GetClass().GetMethod("StopCoroutine", 1);
-        StopCoroutine[this](routine);
+        static auto StopCoroutine = (void(*)(void*, void*))GetExternMethod("UnityEngine.MonoBehaviour::StopCoroutine");
+        if (StopCoroutine) {
+            StopCoroutine(this, routine);
+        } else {
+            static Method<void> StopCoroutineM = GetClass().GetMethod("StopCoroutine", 1);
+            StopCoroutineM[this](routine);
+        }
     }
 
     void StopCoroutine(MonoType* routineType) {
-        static Method<void> StopCoroutine = GetClass().GetMethod("StopCoroutine", 1);
-        StopCoroutine[this](routineType);
+        static auto StopCoroutine = (void(*)(void*, MonoType*))GetExternMethod("UnityEngine.MonoBehaviour::StopCoroutine");
+        if (StopCoroutine) {
+            StopCoroutine(this, routineType);
+        } else {
+            static Method<void> StopCoroutineM = GetClass().GetMethod("StopCoroutine", 1);
+            StopCoroutineM[this](routineType);
+        }
     }
 
     void StopAllCoroutines() {
-        static Method<void> StopAllCoroutines = GetClass().GetMethod("StopAllCoroutines");
-        StopAllCoroutines[this]();
+        static auto StopAllCoroutines = (void(*)(void*))GetExternMethod("UnityEngine.MonoBehaviour::StopAllCoroutines");
+        if (StopAllCoroutines) {
+            StopAllCoroutines(this);
+        } else {
+            static Method<void> StopAllCoroutinesM = GetClass().GetMethod("StopAllCoroutines");
+            StopAllCoroutinesM[this]();
+        }
     }
 
     void Invoke(String* methodName, float time) {
-        static Method<void> Invoke = GetClass().GetMethod("Invoke", 2);
-        Invoke[this](methodName, time);
+        static auto Invoke = (void(*)(void*, String*, float))GetExternMethod("UnityEngine.MonoBehaviour::Invoke");
+        if (Invoke) {
+            Invoke(this, methodName, time);
+        } else {
+            static Method<void> InvokeM = GetClass().GetMethod("Invoke", 2);
+            InvokeM[this](methodName, time);
+        }
     }
 
     void CancelInvoke() {
-        static Method<void> CancelInvoke = GetClass().GetMethod("CancelInvoke");
-        CancelInvoke[this]();
+        static auto CancelInvoke = (void(*)(void*))GetExternMethod("UnityEngine.MonoBehaviour::CancelInvoke");
+        if (CancelInvoke) {
+            CancelInvoke(this);
+        } else {
+            static Method<void> CancelInvokeM = GetClass().GetMethod("CancelInvoke");
+            CancelInvokeM[this]();
+        }
     }
 
     void CancelInvoke(String* methodName) {
-        static Method<void> CancelInvoke = GetClass().GetMethod("CancelInvoke", 1);
-        CancelInvoke[this](methodName);
+        static auto CancelInvoke = (void(*)(void*, String*))GetExternMethod("UnityEngine.MonoBehaviour::CancelInvoke");
+        if (CancelInvoke) {
+            CancelInvoke(this, methodName);
+        } else {
+            static Method<void> CancelInvokeM = GetClass().GetMethod("CancelInvoke", 1);
+            CancelInvokeM[this](methodName);
+        }
     }
 
     bool IsInvoking(String* methodName) {
-        static Method<bool> IsInvoking = GetClass().GetMethod("IsInvoking", 1);
-        return IsInvoking[this](methodName);
+        static auto IsInvoking = (bool(*)(void*, String*))GetExternMethod("UnityEngine.MonoBehaviour::IsInvoking");
+        if (IsInvoking) return IsInvoking(this, methodName);
+        static Method<bool> IsInvokingM = GetClass().GetMethod("IsInvoking", 1);
+        return IsInvokingM[this](methodName);
     }
 
     bool IsInvoking() {
-        static Method<bool> IsInvoking = GetClass().GetMethod("IsInvoking");
-        return IsInvoking[this]();
+        static auto IsInvoking = (bool(*)(void*))GetExternMethod("UnityEngine.MonoBehaviour::IsInvoking");
+        if (IsInvoking) return IsInvoking(this);
+        static Method<bool> IsInvokingM = GetClass().GetMethod("IsInvoking");
+        return IsInvokingM[this]();
     }
 };
 
@@ -1746,73 +2475,122 @@ struct QualitySettings {
     }
 
     static bool GetRealtimeReflectionProbes() {
-        static Method<bool> get_realtimeReflectionProbes = GetClass().GetMethod("get_realtimeReflectionProbes");
-        return get_realtimeReflectionProbes();
+        static auto get_realtimeReflectionProbes = (bool(*)())GetExternMethod("UnityEngine.QualitySettings::get_realtimeReflectionProbes");
+        if (get_realtimeReflectionProbes) return get_realtimeReflectionProbes();
+        static Method<bool> get_realtimeReflectionProbes_m = GetClass().GetMethod("get_realtimeReflectionProbes");
+        return get_realtimeReflectionProbes_m();
     }
 
     static void SetRealtimeReflectionProbes(bool value) {
-        static Method<void> set_realtimeReflectionProbes = GetClass().GetMethod("set_realtimeReflectionProbes");
-        set_realtimeReflectionProbes(value);
+        static auto set_realtimeReflectionProbes = (void(*)(bool))GetExternMethod("UnityEngine.QualitySettings::set_realtimeReflectionProbes");
+        if (set_realtimeReflectionProbes) {
+            set_realtimeReflectionProbes(value);
+        } else {
+            static Method<void> set_realtimeReflectionProbes_m = GetClass().GetMethod("set_realtimeReflectionProbes");
+            set_realtimeReflectionProbes_m(value);
+        }
     }
 
     static int GetAnisotropicFiltering() {
-        static Method<int> get_anisotropicFiltering = GetClass().GetMethod("get_anisotropicFiltering");
-        return get_anisotropicFiltering();
+        static auto get_anisotropicFiltering = (int(*)())GetExternMethod("UnityEngine.QualitySettings::get_anisotropicFiltering");
+        if (get_anisotropicFiltering) return get_anisotropicFiltering();
+        static Method<int> get_anisotropicFiltering_m = GetClass().GetMethod("get_anisotropicFiltering");
+        return get_anisotropicFiltering_m();
     }
 
     static void SetAnisotropicFiltering(int value) {
-        static Method<void> set_anisotropicFiltering = GetClass().GetMethod("set_anisotropicFiltering");
-        set_anisotropicFiltering(value);
+        static auto set_anisotropicFiltering = (void(*)(int))GetExternMethod("UnityEngine.QualitySettings::set_anisotropicFiltering");
+        if (set_anisotropicFiltering) {
+            set_anisotropicFiltering(value);
+        } else {
+            static Method<void> set_anisotropicFiltering_m = GetClass().GetMethod("set_anisotropicFiltering");
+            set_anisotropicFiltering_m(value);
+        }
     }
 
     static int GetVSyncCount() {
-        static Method<int> get_vSyncCount = GetClass().GetMethod("get_vSyncCount");
-        return get_vSyncCount();
+        static auto get_vSyncCount = (int(*)())GetExternMethod("UnityEngine.QualitySettings::get_vSyncCount");
+        if (get_vSyncCount) return get_vSyncCount();
+        static Method<int> get_vSyncCount_m = GetClass().GetMethod("get_vSyncCount");
+        return get_vSyncCount_m();
     }
 
     static void SetVSyncCount(int value) {
-        static Method<void> set_vSyncCount = GetClass().GetMethod("set_vSyncCount");
-        set_vSyncCount(value);
+        static auto set_vSyncCount = (void(*)(int))GetExternMethod("UnityEngine.QualitySettings::set_vSyncCount");
+        if (set_vSyncCount) {
+            set_vSyncCount(value);
+        } else {
+            static Method<void> set_vSyncCount_m = GetClass().GetMethod("set_vSyncCount");
+            set_vSyncCount_m(value);
+        }
     }
 
     static int GetMasterTextureLimit() {
-        static Method<int> get_masterTextureLimit = GetClass().GetMethod("get_masterTextureLimit");
-        return get_masterTextureLimit();
+        static auto get_masterTextureLimit = (int(*)())GetExternMethod("UnityEngine.QualitySettings::get_masterTextureLimit");
+        if (get_masterTextureLimit) return get_masterTextureLimit();
+        static Method<int> get_masterTextureLimit_m = GetClass().GetMethod("get_masterTextureLimit");
+        return get_masterTextureLimit_m();
     }
 
     static void SetMasterTextureLimit(int value) {
-        static Method<void> set_masterTextureLimit = GetClass().GetMethod("set_masterTextureLimit");
-        set_masterTextureLimit(value);
+        static auto set_masterTextureLimit = (void(*)(int))GetExternMethod("UnityEngine.QualitySettings::set_masterTextureLimit");
+        if (set_masterTextureLimit) {
+            set_masterTextureLimit(value);
+        } else {
+            static Method<void> set_masterTextureLimit_m = GetClass().GetMethod("set_masterTextureLimit");
+            set_masterTextureLimit_m(value);
+        }
     }
 
     static float GetShadowDistance() {
-        static Method<float> get_shadowDistance = GetClass().GetMethod("get_shadowDistance");
-        return get_shadowDistance();
+        static auto get_shadowDistance = (float(*)())GetExternMethod("UnityEngine.QualitySettings::get_shadowDistance");
+        if (get_shadowDistance) return get_shadowDistance();
+        static Method<float> get_shadowDistance_m = GetClass().GetMethod("get_shadowDistance");
+        return get_shadowDistance_m();
     }
 
     static void SetShadowDistance(float value) {
-        static Method<void> set_shadowDistance = GetClass().GetMethod("set_shadowDistance");
-        set_shadowDistance(value);
+        static auto set_shadowDistance = (void(*)(float))GetExternMethod("UnityEngine.QualitySettings::set_shadowDistance");
+        if (set_shadowDistance) {
+            set_shadowDistance(value);
+        } else {
+            static Method<void> set_shadowDistance_m = GetClass().GetMethod("set_shadowDistance");
+            set_shadowDistance_m(value);
+        }
     }
 
     static float GetLodBias() {
-        static Method<float> get_lodBias = GetClass().GetMethod("get_lodBias");
-        return get_lodBias();
+        static auto get_lodBias = (float(*)())GetExternMethod("UnityEngine.QualitySettings::get_lodBias");
+        if (get_lodBias) return get_lodBias();
+        static Method<float> get_lodBias_m = GetClass().GetMethod("get_lodBias");
+        return get_lodBias_m();
     }
 
     static void SetLodBias(float value) {
-        static Method<void> set_lodBias = GetClass().GetMethod("set_lodBias");
-        set_lodBias(value);
+        static auto set_lodBias = (void(*)(float))GetExternMethod("UnityEngine.QualitySettings::set_lodBias");
+        if (set_lodBias) {
+            set_lodBias(value);
+        } else {
+            static Method<void> set_lodBias_m = GetClass().GetMethod("set_lodBias");
+            set_lodBias_m(value);
+        }
     }
 
     static int GetAntiAliasing() {
-        static Method<int> get_antiAliasing = GetClass().GetMethod("get_antiAliasing");
-        return get_antiAliasing();
+        static auto get_antiAliasing = (int(*)())GetExternMethod("UnityEngine.QualitySettings::get_antiAliasing");
+        if (get_antiAliasing) return get_antiAliasing();
+        static Method<int> get_antiAliasing_m = GetClass().GetMethod("get_antiAliasing");
+        return get_antiAliasing_m();
     }
 
     static void SetAntiAliasing(int value) {
-        static Method<void> set_antiAliasing = GetClass().GetMethod("set_antiAliasing");
-        set_antiAliasing(value);
+        static auto set_antiAliasing = (void(*)(int))GetExternMethod("UnityEngine.QualitySettings::set_antiAliasing");
+        if (set_antiAliasing) {
+            set_antiAliasing(value);
+        } else {
+            static Method<void> set_antiAliasing_m = GetClass().GetMethod("set_antiAliasing");
+            set_antiAliasing_m(value);
+        }
     }
 };
 
@@ -1827,63 +2605,111 @@ struct AudioSource : Behaviour {
     }
 
     void Play() {
-        static Method<void> Play = GetClass().GetMethod("Play");
-        Play[this]();
+        static auto Play = (void(*)(void*))GetExternMethod("UnityEngine.AudioSource::Play");
+        if (Play) {
+            Play(this);
+        } else {
+            static Method<void> PlayM = GetClass().GetMethod("Play");
+            PlayM[this]();
+        }
     }
 
     void Play(float delay) {
-        static Method<void> Play = GetClass().GetMethod("Play", 1);
-        Play[this](delay);
+        static auto Play = (void(*)(void*, float))GetExternMethod("UnityEngine.AudioSource::Play");
+        if (Play) {
+            Play(this, delay);
+        } else {
+            static Method<void> PlayM = GetClass().GetMethod("Play", 1);
+            PlayM[this](delay);
+        }
     }
 
     void Stop() {
-        static Method<void> Stop = GetClass().GetMethod("Stop");
-        Stop[this]();
+        static auto Stop = (void(*)(void*))GetExternMethod("UnityEngine.AudioSource::Stop");
+        if (Stop) {
+            Stop(this);
+        } else {
+            static Method<void> StopM = GetClass().GetMethod("Stop");
+            StopM[this]();
+        }
     }
 
     void Pause() {
-        static Method<void> Pause = GetClass().GetMethod("Pause");
-        Pause[this]();
+        static auto Pause = (void(*)(void*))GetExternMethod("UnityEngine.AudioSource::Pause");
+        if (Pause) {
+            Pause(this);
+        } else {
+            static Method<void> PauseM = GetClass().GetMethod("Pause");
+            PauseM[this]();
+        }
     }
 
     void UnPause() {
-        static Method<void> UnPause = GetClass().GetMethod("UnPause");
-        UnPause[this]();
+        static auto UnPause = (void(*)(void*))GetExternMethod("UnityEngine.AudioSource::UnPause");
+        if (UnPause) {
+            UnPause(this);
+        } else {
+            static Method<void> UnPauseM = GetClass().GetMethod("UnPause");
+            UnPauseM[this]();
+        }
     }
 
     float GetVolume() {
-        static Method<float> get_volume = GetClass().GetMethod("get_volume");
-        return get_volume[this]();
+        static auto get_volume = (float(*)(void*))GetExternMethod("UnityEngine.AudioSource::get_volume");
+        if (get_volume) return get_volume(this);
+        static Method<float> get_volume_m = GetClass().GetMethod("get_volume");
+        return get_volume_m[this]();
     }
 
     void SetVolume(float volume) {
-        static Method<void> set_volume = GetClass().GetMethod("set_volume");
-        set_volume[this](volume);
+        static auto set_volume = (void(*)(void*, float))GetExternMethod("UnityEngine.AudioSource::set_volume");
+        if (set_volume) {
+            set_volume(this, volume);
+        } else {
+            static Method<void> set_volume_m = GetClass().GetMethod("set_volume");
+            set_volume_m[this](volume);
+        }
     }
 
     AudioClip* GetClip() {
-        static Method<AudioClip*> get_clip = GetClass().GetMethod("get_clip");
-        return get_clip[this]();
+        static auto get_clip = (AudioClip*(*)(void*))GetExternMethod("UnityEngine.AudioSource::get_clip");
+        if (get_clip) return get_clip(this);
+        static Method<AudioClip*> get_clip_m = GetClass().GetMethod("get_clip");
+        return get_clip_m[this]();
     }
 
     void SetClip(AudioClip* clip) {
-        static Method<void> set_clip = GetClass().GetMethod("set_clip");
-        set_clip[this](clip);
+        static auto set_clip = (void(*)(void*, AudioClip*))GetExternMethod("UnityEngine.AudioSource::set_clip");
+        if (set_clip) {
+            set_clip(this, clip);
+        } else {
+            static Method<void> set_clip_m = GetClass().GetMethod("set_clip");
+            set_clip_m[this](clip);
+        }
     }
 
     bool GetIsPlaying() {
-        static Method<bool> get_isPlaying = GetClass().GetMethod("get_isPlaying");
-        return get_isPlaying[this]();
+        static auto get_isPlaying = (bool(*)(void*))GetExternMethod("UnityEngine.AudioSource::get_isPlaying");
+        if (get_isPlaying) return get_isPlaying(this);
+        static Method<bool> get_isPlaying_m = GetClass().GetMethod("get_isPlaying");
+        return get_isPlaying_m[this]();
     }
 
     bool GetLoop() {
-        static Method<bool> get_loop = GetClass().GetMethod("get_loop");
-        return get_loop[this]();
+        static auto get_loop = (bool(*)(void*))GetExternMethod("UnityEngine.AudioSource::get_loop");
+        if (get_loop) return get_loop(this);
+        static Method<bool> get_loop_m = GetClass().GetMethod("get_loop");
+        return get_loop_m[this]();
     }
 
     void SetLoop(bool loop) {
-        static Method<void> set_loop = GetClass().GetMethod("set_loop");
-        set_loop[this](loop);
+        static auto set_loop = (void(*)(void*, bool))GetExternMethod("UnityEngine.AudioSource::set_loop");
+        if (set_loop) {
+            set_loop(this, loop);
+        } else {
+            static Method<void> set_loop_m = GetClass().GetMethod("set_loop");
+            set_loop_m[this](loop);
+        }
     }
 };
 
@@ -1898,54 +2724,82 @@ struct AudioClip : NamedObject {
     }
 
     std::string GetName() {
-        static Method<String*> get_name = GetClass().GetMethod("get_name");
-        auto name = get_name[this]();
-        return name->str();
+        static auto get_name = (String*(*)(void*))GetExternMethod("UnityEngine.Object::get_name");
+        if (get_name) return get_name(this)->str();
+        static Method<String*> get_name_m = GetClass().GetMethod("get_name");
+        return get_name_m[this]()->str();
     }
 
     void SetName(std::string name) {
-        static Method<void> set_name = GetClass().GetMethod("set_name");
-        set_name[this](CreateMonoString(name));
+        static auto set_name = (void(*)(void*, String*))GetExternMethod("UnityEngine.Object::set_name");
+        if (set_name) {
+            set_name(this, CreateMonoString(name));
+        } else {
+            static Method<void> set_name_m = GetClass().GetMethod("set_name");
+            set_name_m[this](CreateMonoString(name));
+        }
     }
 
     void SetData(Array<float>* data, int offsetSamples) {
-        static Method<void> SetData = GetClass().GetMethod("SetData", 2);
-        SetData[this](data, offsetSamples);
+        static auto SetData = (void(*)(void*, Array<float>*, int))GetExternMethod("UnityEngine.AudioClip::SetData");
+        if (SetData) {
+            SetData(this, data, offsetSamples);
+        } else {
+            static Method<void> SetDataM = GetClass().GetMethod("SetData", 2);
+            SetDataM[this](data, offsetSamples);
+        }
     }
 
     void SetData(Array<float>* data, int offsetSamples, int channel) {
-        static Method<void> SetData = GetClass().GetMethod("SetData", 3);
-        SetData[this](data, offsetSamples, channel);
+        static auto SetData = (void(*)(void*, Array<float>*, int, int))GetExternMethod("UnityEngine.AudioClip::SetData");
+        if (SetData) {
+            SetData(this, data, offsetSamples, channel);
+        } else {
+            static Method<void> SetDataM = GetClass().GetMethod("SetData", 3);
+            SetDataM[this](data, offsetSamples, channel);
+        }
     }
 
     bool GetData(Array<float>* data, int offsetSamples) {
-        static Method<bool> GetData = GetClass().GetMethod("GetData", 2);
-        return GetData[this](data, offsetSamples);
+        static auto GetData = (bool(*)(void*, Array<float>*, int))GetExternMethod("UnityEngine.AudioClip::GetData");
+        if (GetData) return GetData(this, data, offsetSamples);
+        static Method<bool> GetDataM = GetClass().GetMethod("GetData", 2);
+        return GetDataM[this](data, offsetSamples);
     }
 
     bool GetData(Array<float>* data, int offsetSamples, int channel) {
-        static Method<bool> GetData = GetClass().GetMethod("GetData", 3);
-        return GetData[this](data, offsetSamples, channel);
+        static auto GetData = (bool(*)(void*, Array<float>*, int, int))GetExternMethod("UnityEngine.AudioClip::GetData");
+        if (GetData) return GetData(this, data, offsetSamples, channel);
+        static Method<bool> GetDataM = GetClass().GetMethod("GetData", 3);
+        return GetDataM[this](data, offsetSamples, channel);
     }
 
     int GetSamples() {
-        static Method<int> get_samples = GetClass().GetMethod("get_samples");
-        return get_samples[this]();
+        static auto get_samples = (int(*)(void*))GetExternMethod("UnityEngine.AudioClip::get_samples");
+        if (get_samples) return get_samples(this);
+        static Method<int> get_samples_m = GetClass().GetMethod("get_samples");
+        return get_samples_m[this]();
     }
 
     int GetChannels() {
-        static Method<int> get_channels = GetClass().GetMethod("get_channels");
-        return get_channels[this]();
+        static auto get_channels = (int(*)(void*))GetExternMethod("UnityEngine.AudioClip::get_channels");
+        if (get_channels) return get_channels(this);
+        static Method<int> get_channels_m = GetClass().GetMethod("get_channels");
+        return get_channels_m[this]();
     }
 
     int GetFrequency() {
-        static Method<int> get_frequency = GetClass().GetMethod("get_frequency");
-        return get_frequency[this]();
+        static auto get_frequency = (int(*)(void*))GetExternMethod("UnityEngine.AudioClip::get_frequency");
+        if (get_frequency) return get_frequency(this);
+        static Method<int> get_frequency_m = GetClass().GetMethod("get_frequency");
+        return get_frequency_m[this]();
     }
 
     float GetLength() {
-        static Method<float> get_length = GetClass().GetMethod("get_length");
-        return get_length[this]();
+        static auto get_length = (float(*)(void*))GetExternMethod("UnityEngine.AudioClip::get_length");
+        if (get_length) return get_length(this);
+        static Method<float> get_length_m = GetClass().GetMethod("get_length");
+        return get_length_m[this]();
     }
 };
 
@@ -1960,70 +2814,114 @@ struct PlayerPrefs {
     }
 
     static void SetInt(std::string key, int value) {
-        static Method<void> SetInt = GetClass().GetMethod("SetInt", 2);
-        SetInt(CreateMonoString(key), value);
+        static auto SetInt = (void(*)(String*, int))GetExternMethod("UnityEngine.PlayerPrefs::SetInt");
+        if (SetInt) {
+            SetInt(CreateMonoString(key), value);
+        } else {
+            static Method<void> SetIntM = GetClass().GetMethod("SetInt", 2);
+            SetIntM(CreateMonoString(key), value);
+        }
     }
 
     static int GetInt(std::string key, int defaultValue = 0) {
-        static Method<int> GetInt = GetClass().GetMethod("GetInt", 2);
-        return GetInt(CreateMonoString(key), defaultValue);
+        static auto GetInt = (int(*)(String*, int))GetExternMethod("UnityEngine.PlayerPrefs::GetInt");
+        if (GetInt) return GetInt(CreateMonoString(key), defaultValue);
+        static Method<int> GetIntM = GetClass().GetMethod("GetInt", 2);
+        return GetIntM(CreateMonoString(key), defaultValue);
     }
 
     static int GetInt(std::string key) {
-        static Method<int> GetInt = GetClass().GetMethod("GetInt", 1);
-        return GetInt(CreateMonoString(key));
+        static auto GetInt = (int(*)(String*))GetExternMethod("UnityEngine.PlayerPrefs::GetInt");
+        if (GetInt) return GetInt(CreateMonoString(key));
+        static Method<int> GetIntM = GetClass().GetMethod("GetInt", 1);
+        return GetIntM(CreateMonoString(key));
     }
 
     static void SetString(std::string key, std::string value) {
-        static Method<void> SetString = GetClass().GetMethod("SetString", 2);
-        SetString(CreateMonoString(key), CreateMonoString(value));
+        static auto SetString = (void(*)(String*, String*))GetExternMethod("UnityEngine.PlayerPrefs::SetString");
+        if (SetString) {
+            SetString(CreateMonoString(key), CreateMonoString(value));
+        } else {
+            static Method<void> SetStringM = GetClass().GetMethod("SetString", 2);
+            SetStringM(CreateMonoString(key), CreateMonoString(value));
+        }
     }
 
     static std::string GetString(std::string key, std::string defaultValue = "") {
-        static Method<String*> GetString = GetClass().GetMethod("GetString", 2);
-        String* result = GetString(CreateMonoString(key), CreateMonoString(defaultValue));
+        static auto GetString = (String*(*)(String*, String*))GetExternMethod("UnityEngine.PlayerPrefs::GetString");
+        if (GetString) return GetString(CreateMonoString(key), CreateMonoString(defaultValue))->str();
+        static Method<String*> GetStringM = GetClass().GetMethod("GetString", 2);
+        String* result = GetStringM(CreateMonoString(key), CreateMonoString(defaultValue));
         return result->str();
     }
 
     static std::string GetString(std::string key) {
-        static Method<String*> GetString = GetClass().GetMethod("GetString", 1);
-        String* result = GetString(CreateMonoString(key));
+        static auto GetString = (String*(*)(String*))GetExternMethod("UnityEngine.PlayerPrefs::GetString");
+        if (GetString) return GetString(CreateMonoString(key))->str();
+        static Method<String*> GetStringM = GetClass().GetMethod("GetString", 1);
+        String* result = GetStringM(CreateMonoString(key));
         return result->str();
     }
 
     static void SetFloat(std::string key, float value) {
-        static Method<void> SetFloat = GetClass().GetMethod("SetFloat", 2);
-        SetFloat(CreateMonoString(key), value);
+        static auto SetFloat = (void(*)(String*, float))GetExternMethod("UnityEngine.PlayerPrefs::SetFloat");
+        if (SetFloat) {
+            SetFloat(CreateMonoString(key), value);
+        } else {
+            static Method<void> SetFloatM = GetClass().GetMethod("SetFloat", 2);
+            SetFloatM(CreateMonoString(key), value);
+        }
     }
 
     static float GetFloat(std::string key, float defaultValue = 0.0f) {
-        static Method<float> GetFloat = GetClass().GetMethod("GetFloat", 2);
-        return GetFloat(CreateMonoString(key), defaultValue);
+        static auto GetFloat = (float(*)(String*, float))GetExternMethod("UnityEngine.PlayerPrefs::GetFloat");
+        if (GetFloat) return GetFloat(CreateMonoString(key), defaultValue);
+        static Method<float> GetFloatM = GetClass().GetMethod("GetFloat", 2);
+        return GetFloatM(CreateMonoString(key), defaultValue);
     }
 
     static float GetFloat(std::string key) {
-        static Method<float> GetFloat = GetClass().GetMethod("GetFloat", 1);
-        return GetFloat(CreateMonoString(key));
+        static auto GetFloat = (float(*)(String*))GetExternMethod("UnityEngine.PlayerPrefs::GetFloat");
+        if (GetFloat) return GetFloat(CreateMonoString(key));
+        static Method<float> GetFloatM = GetClass().GetMethod("GetFloat", 1);
+        return GetFloatM(CreateMonoString(key));
     }
 
     static bool HasKey(std::string key) {
-        static Method<bool> HasKey = GetClass().GetMethod("HasKey", 1);
-        return HasKey(CreateMonoString(key));
+        static auto HasKey = (bool(*)(String*))GetExternMethod("UnityEngine.PlayerPrefs::HasKey");
+        if (HasKey) return HasKey(CreateMonoString(key));
+        static Method<bool> HasKeyM = GetClass().GetMethod("HasKey", 1);
+        return HasKeyM(CreateMonoString(key));
     }
 
     static void DeleteKey(std::string key) {
-        static Method<void> DeleteKey = GetClass().GetMethod("DeleteKey", 1);
-        DeleteKey(CreateMonoString(key));
+        static auto DeleteKey = (void(*)(String*))GetExternMethod("UnityEngine.PlayerPrefs::DeleteKey");
+        if (DeleteKey) {
+            DeleteKey(CreateMonoString(key));
+        } else {
+            static Method<void> DeleteKeyM = GetClass().GetMethod("DeleteKey", 1);
+            DeleteKeyM(CreateMonoString(key));
+        }
     }
 
     static void DeleteAll() {
-        static Method<void> DeleteAll = GetClass().GetMethod("DeleteAll");
-        DeleteAll();
+        static auto DeleteAll = (void(*)())GetExternMethod("UnityEngine.PlayerPrefs::DeleteAll");
+        if (DeleteAll) {
+            DeleteAll();
+        } else {
+            static Method<void> DeleteAllM = GetClass().GetMethod("DeleteAll");
+            DeleteAllM();
+        }
     }
 
     static void Save() {
-        static Method<void> Save = GetClass().GetMethod("Save");
-        Save();
+        static auto Save = (void(*)())GetExternMethod("UnityEngine.PlayerPrefs::Save");
+        if (Save) {
+            Save();
+        } else {
+            static Method<void> SaveM = GetClass().GetMethod("Save");
+            SaveM();
+        }
     }
 };
 
@@ -2038,13 +2936,20 @@ struct Light : Behaviour {
     }
 
     int GetShadows() {
-        static Method<int> get_shadows = GetClass().GetMethod("get_shadows");
-        return get_shadows[this]();
+        static auto get_shadows = (int(*)(void*))GetExternMethod("UnityEngine.Light::get_shadows");
+        if (get_shadows) return get_shadows(this);
+        static Method<int> get_shadows_m = GetClass().GetMethod("get_shadows");
+        return get_shadows_m[this]();
     }
 
     void SetShadows(int value) {
-        static Method<void> set_shadows = GetClass().GetMethod("set_shadows");
-        set_shadows[this](value);
+        static auto set_shadows = (void(*)(void*, int))GetExternMethod("UnityEngine.Light::set_shadows");
+        if (set_shadows) {
+            set_shadows(this, value);
+        } else {
+            static Method<void> set_shadows_m = GetClass().GetMethod("set_shadows");
+            set_shadows_m[this](value);
+        }
     }
 };
 
@@ -2065,19 +2970,28 @@ struct ParticleSystem : Component {
         }
 
         float GetRateOverTimeMultiplier() {
-            static Method<float> get_rateOverTimeMultiplier = GetClass().GetMethod("get_rateOverTimeMultiplier");
-            return get_rateOverTimeMultiplier[this]();
+            static auto get_rateOverTimeMultiplier = (float(*)(void*))GetExternMethod("UnityEngine.ParticleSystem.EmissionModule::get_rateOverTimeMultiplier");
+            if (get_rateOverTimeMultiplier) return get_rateOverTimeMultiplier(this);
+            static Method<float> get_rateOverTimeMultiplier_m = GetClass().GetMethod("get_rateOverTimeMultiplier");
+            return get_rateOverTimeMultiplier_m[this]();
         }
 
         void SetRateOverTimeMultiplier(float value) {
-            static Method<void> set_rateOverTimeMultiplier = GetClass().GetMethod("set_rateOverTimeMultiplier");
-            set_rateOverTimeMultiplier[this](value);
+            static auto set_rateOverTimeMultiplier = (void(*)(void*, float))GetExternMethod("UnityEngine.ParticleSystem.EmissionModule::set_rateOverTimeMultiplier");
+            if (set_rateOverTimeMultiplier) {
+                set_rateOverTimeMultiplier(this, value);
+            } else {
+                static Method<void> set_rateOverTimeMultiplier_m = GetClass().GetMethod("set_rateOverTimeMultiplier");
+                set_rateOverTimeMultiplier_m[this](value);
+            }
         }
     };
 
     EmissionModule GetEmission() {
-        static Method<EmissionModule> get_emission = GetClass().GetMethod("get_emission");
-        return get_emission[this]();
+        static auto get_emission = (EmissionModule(*)(void*))GetExternMethod("UnityEngine.ParticleSystem::get_emission");
+        if (get_emission) return get_emission(this);
+        static Method<EmissionModule> get_emission_m = GetClass().GetMethod("get_emission");
+        return get_emission_m[this]();
     }
 };
 
@@ -2094,24 +3008,43 @@ struct Application {
 
     static std::string GetIdentifier() {
         static auto get_idientifier = (String*(*)())GetExternMethod("UnityEngine.Application::get_identifier");
-        String* id = get_idientifier();
+        if (get_idientifier) return get_idientifier()->str();
+        static Method<String*> get_idientifier_m = GetClass().GetMethod("get_identifier");
+        String* id = get_idientifier_m();
         return id->str();
     }
     static int GetTargetFrameRate() {
-        static Method<int> get_targetFrameRate = GetClass().GetMethod("get_targetFrameRate");
-        return get_targetFrameRate();
+        static auto get_targetFrameRate = (int(*)())GetExternMethod("UnityEngine.Application::get_targetFrameRate");
+        if (get_targetFrameRate) return get_targetFrameRate();
+        static Method<int> get_targetFrameRate_m = GetClass().GetMethod("get_targetFrameRate");
+        return get_targetFrameRate_m();
     }
     static void SetTargetFrameRate(int targetFrameRate) {
-        static Method<void> set_targetFrameRate = GetClass().GetMethod("set_targetFrameRate");
-        set_targetFrameRate(targetFrameRate);
+        static auto set_targetFrameRate = (void(*)(int))GetExternMethod("UnityEngine.Application::set_targetFrameRate");
+        if (set_targetFrameRate) {
+            set_targetFrameRate(targetFrameRate);
+        } else {
+            static Method<void> set_targetFrameRate_m = GetClass().GetMethod("set_targetFrameRate");
+            set_targetFrameRate_m(targetFrameRate);
+        }
     }
     static void OpenUrl(std::string url) {
         static auto openurl = (void(*)(String*))GetExternMethod("UnityEngine.Application::OpenURL");
-        openurl(CreateMonoString(url));
+        if (openurl) {
+            openurl(CreateMonoString(url));
+        } else {
+            static Method<void> OpenURLM = GetClass().GetMethod("OpenURL", 1);
+            OpenURLM(CreateMonoString(url));
+        }
     }
     static void Quit() {
-        static Method<void> quit = GetClass().GetMethod("Quit");
-        quit();
+        static auto Quit = (void(*)())GetExternMethod("UnityEngine.Application::Quit");
+        if (Quit) {
+            Quit();
+        } else {
+            static Method<void> QuitM = GetClass().GetMethod("Quit");
+            QuitM();
+        }
     }
 };
 
@@ -2126,35 +3059,50 @@ struct DownloadHandler : Object {
     }
 
     bool GetIsDone() {
-        static Method<bool> get_isDone = GetClass().GetMethod("get_isDone");
-        return get_isDone[this]();
+        static auto get_isDone = (bool(*)(void*))GetExternMethod("UnityEngine.Networking.DownloadHandler::get_isDone");
+        if (get_isDone) return get_isDone(this);
+        static Method<bool> get_isDone_m = GetClass().GetMethod("get_isDone");
+        return get_isDone_m[this]();
     }
 
     Array<uint8_t>* GetData() {
-        static Method<Array<uint8_t>*> get_data = GetClass().GetMethod("get_data");
-        return get_data[this]();
+        static auto get_data = (Array<uint8_t>*(*)(void*))GetExternMethod("UnityEngine.Networking.DownloadHandler::get_data");
+        if (get_data) return get_data(this);
+        static Method<Array<uint8_t>*> get_data_m = GetClass().GetMethod("get_data");
+        return get_data_m[this]();
     }
 
     std::string GetText() {
-        static Method<String*> get_text = GetClass().GetMethod("get_text");
-        String* text = get_text[this]();
+        static auto get_text = (String*(*)(void*))GetExternMethod("UnityEngine.Networking.DownloadHandler::get_text");
+        if (get_text) return get_text(this)->str();
+        static Method<String*> get_text_m = GetClass().GetMethod("get_text");
+        String* text = get_text_m[this]();
         return text->str();
     }
 
     bool GetHasError() {
-        static Method<bool> get_hasError = GetClass().GetMethod("get_hasError");
-        return get_hasError[this]();
+        static auto get_hasError = (bool(*)(void*))GetExternMethod("UnityEngine.Networking.DownloadHandler::get_hasError");
+        if (get_hasError) return get_hasError(this);
+        static Method<bool> get_hasError_m = GetClass().GetMethod("get_hasError");
+        return get_hasError_m[this]();
     }
 
     std::string GetError() {
-        static Method<String*> get_error = GetClass().GetMethod("get_error");
-        String* error = get_error[this]();
+        static auto get_error = (String*(*)(void*))GetExternMethod("UnityEngine.Networking.DownloadHandler::get_error");
+        if (get_error) return get_error(this)->str();
+        static Method<String*> get_error_m = GetClass().GetMethod("get_error");
+        String* error = get_error_m[this]();
         return error->str();
     }
 
     void Dispose() {
-        static Method<void> Dispose = GetClass().GetMethod("Dispose");
-        Dispose[this]();
+        static auto Dispose = (void(*)(void*))GetExternMethod("UnityEngine.Networking.DownloadHandler::Dispose");
+        if (Dispose) {
+            Dispose(this);
+        } else {
+            static Method<void> DisposeM = GetClass().GetMethod("Dispose");
+            DisposeM[this]();
+        }
     }
 };
 
@@ -2165,13 +3113,17 @@ struct DownloadHandlerTexture : DownloadHandler {
     }
 
     Texture2D* GetTexture() {
-        static Method<Texture2D*> getTexture = GetClass().GetMethod("get_texture", 0);
-        return getTexture(this);
+        static auto getTexture = (Texture2D*(*)(void*))GetExternMethod("UnityEngine.Networking.DownloadHandlerTexture::get_texture");
+        if (getTexture) return getTexture(this);
+        static Method<Texture2D*> getTextureM = GetClass().GetMethod("get_texture", 0);
+        return getTextureM(this);
     }
 
     static Texture2D* GetContent(UnityWebRequest* www) {
-        static Method<Texture2D*> getContent = GetClass().GetMethod("GetContent", 1);
-        return getContent(www);
+        static auto getContent = (Texture2D*(*)(UnityWebRequest*))GetExternMethod("UnityEngine.Networking.DownloadHandlerTexture::GetContent");
+        if (getContent) return getContent(www);
+        static Method<Texture2D*> getContentM = GetClass().GetMethod("GetContent", 1);
+        return getContentM(www);
     }
 };
 
@@ -2186,55 +3138,83 @@ struct UnityWebRequest : Object {
     }
 
     static UnityWebRequest* Get(std::string uri) {
-        static Method<UnityWebRequest*> Get = GetClass().GetMethod("Get", 1);
-        return Get(CreateMonoString(uri));
+        static auto Get = (UnityWebRequest*(*)(String*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::Get");
+        if (Get) return Get(CreateMonoString(uri));
+        static Method<UnityWebRequest*> GetM = GetClass().GetMethod("Get", 1);
+        return GetM(CreateMonoString(uri));
     }
 
     static UnityWebRequest* Post(std::string uri, std::string postData) {
-        static Method<UnityWebRequest*> Post = GetClass().GetMethod("Post", 2);
-        return Post(CreateMonoString(uri), CreateMonoString(postData));
+        static auto Post = (UnityWebRequest*(*)(String*, String*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::Post");
+        if (Post) return Post(CreateMonoString(uri), CreateMonoString(postData));
+        static Method<UnityWebRequest*> PostM = GetClass().GetMethod("Post", 2);
+        return PostM(CreateMonoString(uri), CreateMonoString(postData));
     }
 
     static UnityWebRequest* Put(std::string uri, Array<uint8_t>* bodyData) {
-        static Method<UnityWebRequest*> Put = GetClass().GetMethod("Put", 2);
-        return Put(CreateMonoString(uri), bodyData);
+        static auto Put = (UnityWebRequest*(*)(String*, Array<uint8_t>*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::Put");
+        if (Put) return Put(CreateMonoString(uri), bodyData);
+        static Method<UnityWebRequest*> PutM = GetClass().GetMethod("Put", 2);
+        return PutM(CreateMonoString(uri), bodyData);
     }
 
     static UnityWebRequest* Delete(std::string uri) {
-        static Method<UnityWebRequest*> Delete = GetClass().GetMethod("Delete", 1);
-        return Delete(CreateMonoString(uri));
+        static auto Delete = (UnityWebRequest*(*)(String*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::Delete");
+        if (Delete) return Delete(CreateMonoString(uri));
+        static Method<UnityWebRequest*> DeleteM = GetClass().GetMethod("Delete", 1);
+        return DeleteM(CreateMonoString(uri));
     }
 
     void SetDownloadHandler(DownloadHandler* downloadHandler) {
-        static Method<void> set_downloadHandler = GetClass().GetMethod("set_downloadHandler");
-        set_downloadHandler[this](downloadHandler);
+        static auto set_downloadHandler = (void(*)(void*, DownloadHandler*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::set_downloadHandler");
+        if (set_downloadHandler) {
+            set_downloadHandler(this, downloadHandler);
+        } else {
+            static Method<void> set_downloadHandler_m = GetClass().GetMethod("set_downloadHandler");
+            set_downloadHandler_m[this](downloadHandler);
+        }
     }
 
     DownloadHandler* GetDownloadHandler() {
-        static Method<DownloadHandler*> get_downloadHandler = GetClass().GetMethod("get_downloadHandler");
-        return get_downloadHandler[this]();
+        static auto get_downloadHandler = (DownloadHandler*(*)(void*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::get_downloadHandler");
+        if (get_downloadHandler) return get_downloadHandler(this);
+        static Method<DownloadHandler*> get_downloadHandler_m = GetClass().GetMethod("get_downloadHandler");
+        return get_downloadHandler_m[this]();
     }
 
     void SetUrl(std::string url) {
-        static Method<void> set_url = GetClass().GetMethod("set_url");
-        set_url[this](CreateMonoString(url));
+        static auto set_url = (void(*)(void*, String*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::set_url");
+        if (set_url) {
+            set_url(this, CreateMonoString(url));
+        } else {
+            static Method<void> set_url_m = GetClass().GetMethod("set_url");
+            set_url_m[this](CreateMonoString(url));
+        }
     }
 
     std::string GetUrl() {
-        static Method<String*> get_url = GetClass().GetMethod("get_url");
-        String* url = get_url[this]();
-        return url->str();
+        static auto get_url = (String*(*)(void*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::get_url");
+        if (get_url) return get_url(this)->str();
+        static Method<String*> get_url_m = GetClass().GetMethod("get_url");
+        return get_url_m[this]()->str();
     }
 
     void SetMethod(std::string method) {
-        static Method<void> set_method = GetClass().GetMethod("set_method");
-        set_method[this](CreateMonoString(method));
+        static auto set_method = (void(*)(void*, String*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::set_method");
+        if (set_method) {
+            set_method(this, CreateMonoString(method));
+        } else {
+            static Method<void> set_method_m = GetClass().GetMethod("set_method");
+            set_method_m[this](CreateMonoString(method));
+        }
     }
 
     static UnityWebRequest* GetTexture(std::string url, bool nonReadable = false) {
+        static auto GetTexture = (UnityWebRequest*(*)(String*, bool))GetExternMethod("UnityEngine.Networking.UnityWebRequestTexture::GetTexture");
+        if (GetTexture) return GetTexture(CreateMonoString(url), nonReadable);
         static Class uwrt = Class("UnityEngine.Networking", "UnityWebRequestTexture");
-        static Method<UnityWebRequest*> getTex = uwrt.GetMethod("GetTexture", 2);
-        return getTex(CreateMonoString(url), nonReadable);
+        static Method<UnityWebRequest*> getTexM = uwrt.GetMethod("GetTexture", 2);
+        return getTexM(CreateMonoString(url), nonReadable);
     }
 
     static UnityWebRequest* GetTexture(std::string url) {
@@ -2242,50 +3222,78 @@ struct UnityWebRequest : Object {
     }
 
     std::string GetMethod() {
-        static Method<String*> get_method = GetClass().GetMethod("get_method");
-        String* method = get_method[this]();
-        return method->str();
+        static auto get_method = (String*(*)(void*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::get_method");
+        if (get_method) return get_method(this)->str();
+        static Method<String*> get_method_m = GetClass().GetMethod("get_method");
+        return get_method_m[this]()->str();
     }
 
     bool GetIsDone() {
-        static Method<bool> get_isDone = GetClass().GetMethod("get_isDone");
-        return get_isDone[this]();
+        static auto get_isDone = (bool(*)(void*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::get_isDone");
+        if (get_isDone) return get_isDone(this);
+        static Method<bool> get_isDone_m = GetClass().GetMethod("get_isDone");
+        return get_isDone_m[this]();
     }
 
     bool GetHasError() {
-        static Method<bool> get_hasError = GetClass().GetMethod("get_hasError");
-        return get_hasError[this]();
+        static auto get_hasError = (bool(*)(void*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::get_hasError");
+        if (get_hasError) return get_hasError(this);
+        static Method<bool> get_hasError_m = GetClass().GetMethod("get_hasError");
+        return get_hasError_m[this]();
     }
 
     std::string GetError() {
-        static Method<String*> get_error = GetClass().GetMethod("get_error");
-        String* error = get_error[this]();
-        return error->str();
+        static auto get_error = (String*(*)(void*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::get_error");
+        if (get_error) return get_error(this)->str();
+        static Method<String*> get_error_m = GetClass().GetMethod("get_error");
+        return get_error_m[this]()->str();
     }
 
     long GetResponseCode() {
-        static Method<long> get_responseCode = GetClass().GetMethod("get_responseCode");
-        return get_responseCode[this]();
+        static auto get_responseCode = (long(*)(void*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::get_responseCode");
+        if (get_responseCode) return get_responseCode(this);
+        static Method<long> get_responseCode_m = GetClass().GetMethod("get_responseCode");
+        return get_responseCode_m[this]();
     }
 
     void SetRequestHeader(std::string name, std::string value) {
-        static Method<void> SetRequestHeader = GetClass().GetMethod("SetRequestHeader", 2);
-        SetRequestHeader[this](CreateMonoString(name), CreateMonoString(value));
+        static auto SetRequestHeader = (void(*)(void*, String*, String*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::SetRequestHeader");
+        if (SetRequestHeader) {
+            SetRequestHeader(this, CreateMonoString(name), CreateMonoString(value));
+        } else {
+            static Method<void> SetRequestHeaderM = GetClass().GetMethod("SetRequestHeader", 2);
+            SetRequestHeaderM[this](CreateMonoString(name), CreateMonoString(value));
+        }
     }
 
     void SendWebRequest() {
-        static Method<void> SendWebRequest = GetClass().GetMethod("SendWebRequest");
-        SendWebRequest[this]();
+        static auto SendWebRequest = (void(*)(void*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::SendWebRequest");
+        if (SendWebRequest) {
+            SendWebRequest(this);
+        } else {
+            static Method<void> SendWebRequestM = GetClass().GetMethod("SendWebRequest");
+            SendWebRequestM[this]();
+        }
     }
 
     void Abort() {
-        static Method<void> Abort = GetClass().GetMethod("Abort");
-        Abort[this]();
+        static auto Abort = (void(*)(void*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::Abort");
+        if (Abort) {
+            Abort(this);
+        } else {
+            static Method<void> AbortM = GetClass().GetMethod("Abort");
+            AbortM[this]();
+        }
     }
 
     void Dispose() {
-        static Method<void> Dispose = GetClass().GetMethod("Dispose");
-        Dispose[this]();
+        static auto Dispose = (void(*)(void*))GetExternMethod("UnityEngine.Networking.UnityWebRequest::Dispose");
+        if (Dispose) {
+            Dispose(this);
+        } else {
+            static Method<void> DisposeM = GetClass().GetMethod("Dispose");
+            DisposeM[this]();
+        }
     }
 };
 
@@ -2298,31 +3306,61 @@ struct GL{
     }
 
     static void Begin(int mode){
-        static Method<void> Begin = GetClass().GetMethod("Begin");
-        Begin(mode);
+        static auto Begin = (void(*)(int))GetExternMethod("UnityEngine.GL::Begin");
+        if (Begin) {
+            Begin(mode);
+        } else {
+            static Method<void> BeginM = GetClass().GetMethod("Begin");
+            BeginM(mode);
+        }
     }
     static void End(){
-        static Method<void> End = GetClass().GetMethod("End");
-        End();
+        static auto End = (void(*)())GetExternMethod("UnityEngine.GL::End");
+        if (End) {
+            End();
+        } else {
+            static Method<void> EndM = GetClass().GetMethod("End");
+            EndM();
+        }
     }
     static void Color(Color color){
-        static Method<void> Color = GetClass().GetMethod("Color");
-        Color(color);
+        static auto Color = (void(*)(BNM::Structures::Unity::Color))GetExternMethod("UnityEngine.GL::Color");
+        if (Color) {
+            Color(color);
+        } else {
+            static Method<void> ColorM = GetClass().GetMethod("Color");
+            ColorM(color);
+        }
     }
     static void Vertex3(float x, float y, float z){
-        static Method<void> Vertex3 = GetClass().GetMethod("Vertex3");
-        Vertex3(x,y,z);
+        static auto Vertex3 = (void(*)(float, float, float))GetExternMethod("UnityEngine.GL::Vertex3");
+        if (Vertex3) {
+            Vertex3(x, y, z);
+        } else {
+            static Method<void> Vertex3M = GetClass().GetMethod("Vertex3");
+            Vertex3M(x,y,z);
+        }
     }
     static void Vertex(Vector3 vector3){
         Vertex3(vector3.x, vector3.y, vector3.z);
     }
     static void PushMatrix(){
-        static Method<void> PushMatrix = GetClass().GetMethod("PushMatrix");
-        PushMatrix();
+        static auto PushMatrix = (void(*)())GetExternMethod("UnityEngine.GL::PushMatrix");
+        if (PushMatrix) {
+            PushMatrix();
+        } else {
+            static Method<void> PushMatrixM = GetClass().GetMethod("PushMatrix");
+            PushMatrixM();
+        }
     }
     static void PopMatrix(){
-        static Method<void> PopMatrix = GetClass().GetMethod("PopMatrix");
-        PopMatrix();
+        static auto PopMatrix = (void(*)())GetExternMethod("UnityEngine.GL::PopMatrix");
+        if (PopMatrix) {
+            PopMatrix();
+        } else {
+            static Method<void> PopMatrixM = GetClass().GetMethod("PopMatrix");
+            PopMatrixM();
+        }
     }
 
 };
@@ -2334,33 +3372,59 @@ struct TMP_Text : MaskableGraphic{
         return Class("TMPro", "TMP_Text");
     }
     std::string GetText(){
-        static Method<String*> get_text = GetClass().GetMethod("get_text");
-        auto str = get_text[this]();
+        static auto get_text = (String*(*)(void*))GetExternMethod("TMPro.TMP_Text::get_text");
+        if (get_text) return get_text(this)->str();
+        static Method<String*> get_text_m = GetClass().GetMethod("get_text");
+        auto str = get_text_m[this]();
         return str->str();
     }
     void SetText(std::string text){
-        static Method<void> set_text = GetClass().GetMethod("set_text");
-        set_text[this](CreateMonoString(text));
+        static auto set_text = (void(*)(void*, String*))GetExternMethod("TMPro.TMP_Text::set_text");
+        if (set_text) {
+            set_text(this, CreateMonoString(text));
+        } else {
+            static Method<void> set_text_m = GetClass().GetMethod("set_text");
+            set_text_m[this](CreateMonoString(text));
+        }
     }
     float GetFontSize(){
-        static Method<float> get_fontSize = GetClass().GetMethod("get_fontSize");
-        return get_fontSize[this]();
+        static auto get_fontSize = (float(*)(void*))GetExternMethod("TMPro.TMP_Text::get_fontSize");
+        if (get_fontSize) return get_fontSize(this);
+        static Method<float> get_fontSize_m = GetClass().GetMethod("get_fontSize");
+        return get_fontSize_m[this]();
     }
     void SetFontSize(float size){
-        static Method<void> set_fontSize = GetClass().GetMethod("set_fontSize");
-        set_fontSize[this](size);
+        static auto set_fontSize = (void(*)(void*, float))GetExternMethod("TMPro.TMP_Text::set_fontSize");
+        if (set_fontSize) {
+            set_fontSize(this, size);
+        } else {
+            static Method<void> set_fontSize_m = GetClass().GetMethod("set_fontSize");
+            set_fontSize_m[this](size);
+        }
     }
     TextAlignmentOptions GetAlignment(){
-        static Method<TextAlignmentOptions> get_alignment = GetClass().GetMethod("get_alignment");
-        return get_alignment[this]();
+        static auto get_alignment = (TextAlignmentOptions(*)(void*))GetExternMethod("TMPro.TMP_Text::get_alignment");
+        if (get_alignment) return get_alignment(this);
+        static Method<TextAlignmentOptions> get_alignment_m = GetClass().GetMethod("get_alignment");
+        return get_alignment_m[this]();
     }
     void SetAlignment(TextAlignmentOptions alignment){
-        static Method<void> set_alignment = GetClass().GetMethod("set_alignment");
-        set_alignment[this](alignment);
+        static auto set_alignment = (void(*)(void*, TextAlignmentOptions))GetExternMethod("TMPro.TMP_Text::set_alignment");
+        if (set_alignment) {
+            set_alignment(this, alignment);
+        } else {
+            static Method<void> set_alignment_m = GetClass().GetMethod("set_alignment");
+            set_alignment_m[this](alignment);
+        }
     }
     void SetEnableAutoSizing(bool value){
-        static Method<void> set_enableAutoSizing = GetClass().GetMethod("set_enableAutoSizing");
-        return set_enableAutoSizing[this](value);
+        static auto set_enableAutoSizing = (void(*)(void*, bool))GetExternMethod("TMPro.TMP_Text::set_enableAutoSizing");
+        if (set_enableAutoSizing) {
+            set_enableAutoSizing(this, value);
+        } else {
+            static Method<void> set_enableAutoSizing_m = GetClass().GetMethod("set_enableAutoSizing");
+            set_enableAutoSizing_m[this](value);
+        }
     }
 };
 struct TextMeshPro : TMP_Text{
@@ -2369,5 +3433,312 @@ struct TextMeshPro : TMP_Text{
     }
     static Class GetClass(){
         return Class("TMPro", "TextMeshPro");
+    }
+};
+struct TrailRenderer : Renderer {
+    static MonoType* GetType() {
+        static MonoType* type = Class("UnityEngine", "TrailRenderer").GetMonoType();
+        return type;
+    }
+    static Class GetClass() {
+        static Class mclass = Class("UnityEngine", "TrailRenderer");
+        return mclass;
+    }
+
+    int GetNumPositions() {
+        static auto get_numPositions = (int(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_numPositions");
+        if (get_numPositions) return get_numPositions(this);
+        static Method<int> m = GetClass().GetMethod("get_numPositions");
+        return m[this]();
+    }
+
+    float GetTime() {
+        static auto get_time = (float(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_time");
+        if (get_time) return get_time(this);
+        static Method<float> m = GetClass().GetMethod("get_time");
+        return m[this]();
+    }
+    void SetTime(float value) {
+        static auto set_time = (void(*)(void*, float))GetExternMethod("UnityEngine.TrailRenderer::set_time");
+        if (set_time) {
+            set_time(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_time");
+            m[this](value);
+        }
+    }
+
+    float GetStartWidth() {
+        static auto get_startWidth = (float(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_startWidth");
+        if (get_startWidth) return get_startWidth(this);
+        static Method<float> m = GetClass().GetMethod("get_startWidth");
+        return m[this]();
+    }
+    void SetStartWidth(float value) {
+        static auto set_startWidth = (void(*)(void*, float))GetExternMethod("UnityEngine.TrailRenderer::set_startWidth");
+        if (set_startWidth) {
+            set_startWidth(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_startWidth");
+            m[this](value);
+        }
+    }
+
+    float GetEndWidth() {
+        static auto get_endWidth = (float(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_endWidth");
+        if (get_endWidth) return get_endWidth(this);
+        static Method<float> m = GetClass().GetMethod("get_endWidth");
+        return m[this]();
+    }
+    void SetEndWidth(float value) {
+        static auto set_endWidth = (void(*)(void*, float))GetExternMethod("UnityEngine.TrailRenderer::set_endWidth");
+        if (set_endWidth) {
+            set_endWidth(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_endWidth");
+            m[this](value);
+        }
+    }
+
+    float GetWidthMultiplier() {
+        static auto get_widthMultiplier = (float(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_widthMultiplier");
+        if (get_widthMultiplier) return get_widthMultiplier(this);
+        static Method<float> m = GetClass().GetMethod("get_widthMultiplier");
+        return m[this]();
+    }
+    void SetWidthMultiplier(float value) {
+        static auto set_widthMultiplier = (void(*)(void*, float))GetExternMethod("UnityEngine.TrailRenderer::set_widthMultiplier");
+        if (set_widthMultiplier) {
+            set_widthMultiplier(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_widthMultiplier");
+            m[this](value);
+        }
+    }
+
+    bool GetAutodestruct() {
+        static auto get_autodestruct = (bool(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_autodestruct");
+        if (get_autodestruct) return get_autodestruct(this);
+        static Method<bool> m = GetClass().GetMethod("get_autodestruct");
+        return m[this]();
+    }
+    void SetAutodestruct(bool value) {
+        static auto set_autodestruct = (void(*)(void*, bool))GetExternMethod("UnityEngine.TrailRenderer::set_autodestruct");
+        if (set_autodestruct) {
+            set_autodestruct(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_autodestruct");
+            m[this](value);
+        }
+    }
+
+    bool GetEmitting() {
+        static auto get_emitting = (bool(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_emitting");
+        if (get_emitting) return get_emitting(this);
+        static Method<bool> m = GetClass().GetMethod("get_emitting");
+        return m[this]();
+    }
+    void SetEmitting(bool value) {
+        static auto set_emitting = (void(*)(void*, bool))GetExternMethod("UnityEngine.TrailRenderer::set_emitting");
+        if (set_emitting) {
+            set_emitting(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_emitting");
+            m[this](value);
+        }
+    }
+
+    int GetNumCornerVertices() {
+        static auto get_numCornerVertices = (int(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_numCornerVertices");
+        if (get_numCornerVertices) return get_numCornerVertices(this);
+        static Method<int> m = GetClass().GetMethod("get_numCornerVertices");
+        return m[this]();
+    }
+    void SetNumCornerVertices(int value) {
+        static auto set_numCornerVertices = (void(*)(void*, int))GetExternMethod("UnityEngine.TrailRenderer::set_numCornerVertices");
+        if (set_numCornerVertices) {
+            set_numCornerVertices(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_numCornerVertices");
+            m[this](value);
+        }
+    }
+
+    int GetNumCapVertices() {
+        static auto get_numCapVertices = (int(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_numCapVertices");
+        if (get_numCapVertices) return get_numCapVertices(this);
+        static Method<int> m = GetClass().GetMethod("get_numCapVertices");
+        return m[this]();
+    }
+    void SetNumCapVertices(int value) {
+        static auto set_numCapVertices = (void(*)(void*, int))GetExternMethod("UnityEngine.TrailRenderer::set_numCapVertices");
+        if (set_numCapVertices) {
+            set_numCapVertices(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_numCapVertices");
+            m[this](value);
+        }
+    }
+
+    float GetMinVertexDistance() {
+        static auto get_minVertexDistance = (float(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_minVertexDistance");
+        if (get_minVertexDistance) return get_minVertexDistance(this);
+        static Method<float> m = GetClass().GetMethod("get_minVertexDistance");
+        return m[this]();
+    }
+    void SetMinVertexDistance(float value) {
+        static auto set_minVertexDistance = (void(*)(void*, float))GetExternMethod("UnityEngine.TrailRenderer::set_minVertexDistance");
+        if (set_minVertexDistance) {
+            set_minVertexDistance(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_minVertexDistance");
+            m[this](value);
+        }
+    }
+
+    Color GetStartColor() {
+        static auto get_startColor = (Color(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_startColor");
+        if (get_startColor) return get_startColor(this);
+        static Method<Color> m = GetClass().GetMethod("get_startColor");
+        return m[this]();
+    }
+    void SetStartColor(Color value) {
+        static auto set_startColor = (void(*)(void*, Color))GetExternMethod("UnityEngine.TrailRenderer::set_startColor");
+        if (set_startColor) {
+            set_startColor(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_startColor");
+            m[this](value);
+        }
+    }
+
+    Color GetEndColor() {
+        static auto get_endColor = (Color(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_endColor");
+        if (get_endColor) return get_endColor(this);
+        static Method<Color> m = GetClass().GetMethod("get_endColor");
+        return m[this]();
+    }
+    void SetEndColor(Color value) {
+        static auto set_endColor = (void(*)(void*, Color))GetExternMethod("UnityEngine.TrailRenderer::set_endColor");
+        if (set_endColor) {
+            set_endColor(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_endColor");
+            m[this](value);
+        }
+    }
+
+    int GetPositionCount() {
+        static auto get_positionCount = (int(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_positionCount");
+        if (get_positionCount) return get_positionCount(this);
+        static Method<int> m = GetClass().GetMethod("get_positionCount");
+        return m[this]();
+    }
+
+    void SetPosition(int index, Vector3 position) {
+        static auto SetPosition = (void(*)(void*, int, Vector3))GetExternMethod("UnityEngine.TrailRenderer::SetPosition");
+        if (SetPosition) {
+            SetPosition(this, index, position);
+        } else {
+            static Method<void> m = GetClass().GetMethod("SetPosition");
+            m[this](index, position);
+        }
+    }
+
+    Vector3 GetPosition(int index) {
+        static auto GetPosition = (Vector3(*)(void*, int))GetExternMethod("UnityEngine.TrailRenderer::GetPosition");
+        if (GetPosition) return GetPosition(this, index);
+        static Method<Vector3> m = GetClass().GetMethod("GetPosition");
+        return m[this](index);
+    }
+
+    Vector2 GetTextureScale() {
+        static auto get_textureScale = (Vector2(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_textureScale");
+        if (get_textureScale) return get_textureScale(this);
+        static Method<Vector2> m = GetClass().GetMethod("get_textureScale");
+        return m[this]();
+    }
+    void SetTextureScale(Vector2 value) {
+        static auto set_textureScale = (void(*)(void*, Vector2))GetExternMethod("UnityEngine.TrailRenderer::set_textureScale");
+        if (set_textureScale) {
+            set_textureScale(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_textureScale");
+            m[this](value);
+        }
+    }
+
+    float GetShadowBias() {
+        static auto get_shadowBias = (float(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_shadowBias");
+        if (get_shadowBias) return get_shadowBias(this);
+        static Method<float> m = GetClass().GetMethod("get_shadowBias");
+        return m[this]();
+    }
+    void SetShadowBias(float value) {
+        static auto set_shadowBias = (void(*)(void*, float))GetExternMethod("UnityEngine.TrailRenderer::set_shadowBias");
+        if (set_shadowBias) {
+            set_shadowBias(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_shadowBias");
+            m[this](value);
+        }
+    }
+
+    bool GetGenerateLightingData() {
+        static auto get_generateLightingData = (bool(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_generateLightingData");
+        if (get_generateLightingData) return get_generateLightingData(this);
+        static Method<bool> m = GetClass().GetMethod("get_generateLightingData");
+        return m[this]();
+    }
+    void SetGenerateLightingData(bool value) {
+        static auto set_generateLightingData = (void(*)(void*, bool))GetExternMethod("UnityEngine.TrailRenderer::set_generateLightingData");
+        if (set_generateLightingData) {
+            set_generateLightingData(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_generateLightingData");
+            m[this](value);
+        }
+    }
+
+    bool GetApplyActiveColorSpace() {
+        static auto get_applyActiveColorSpace = (bool(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_applyActiveColorSpace");
+        if (get_applyActiveColorSpace) return get_applyActiveColorSpace(this);
+        static Method<bool> m = GetClass().GetMethod("get_applyActiveColorSpace");
+        return m[this]();
+    }
+    void SetApplyActiveColorSpace(bool value) {
+        static auto set_applyActiveColorSpace = (void(*)(void*, bool))GetExternMethod("UnityEngine.TrailRenderer::set_applyActiveColorSpace");
+        if (set_applyActiveColorSpace) {
+            set_applyActiveColorSpace(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_applyActiveColorSpace");
+            m[this](value);
+        }
+    }
+
+    void Clear() {
+        static auto Clear = (void(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::Clear");
+        if (Clear) {
+            Clear(this);
+        } else {
+            static Method<void> m = GetClass().GetMethod("Clear");
+            m[this]();
+        }
+    }
+
+    Gradient* GetColorGradient() {
+        static auto get_colorGradient = (Gradient*(*)(void*))GetExternMethod("UnityEngine.TrailRenderer::get_colorGradient");
+        if (get_colorGradient) return get_colorGradient(this);
+        static Method<Gradient*> m = GetClass().GetMethod("get_colorGradient");
+        return m[this]();
+    }
+    void SetColorGradient(Gradient* value) {
+        static auto set_colorGradient = (void(*)(void*, Gradient*))GetExternMethod("UnityEngine.TrailRenderer::set_colorGradient");
+        if (set_colorGradient) {
+            set_colorGradient(this, value);
+        } else {
+            static Method<void> m = GetClass().GetMethod("set_colorGradient");
+            m[this](value);
+        }
     }
 };
