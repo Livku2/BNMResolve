@@ -488,13 +488,8 @@ struct GameObject : NamedObject{
         }
     }
     static void Destroy(Object* obj, float t) {
-        static auto Destroy = (void(*)(Object*, float))GetExternMethod("UnityEngine.Object::Destroy");
-        if (Destroy) {
-            Destroy(obj, t);
-        } else {
-            static Method<void> DestroyM = Class("UnityEngine", "Object").GetMethod("Destroy", 2);
-            DestroyM(obj, t);
-        }
+        static Method<void> DestroyM = Class("UnityEngine", "Object").GetMethod("Destroy", 2);
+        DestroyM(obj, t);
     }
     static GameObject *CreatePrimitive(PrimitiveType primitiveType){
         static auto CreatePrimitive = (GameObject*(*)(PrimitiveType))GetExternMethod("UnityEngine.GameObject::CreatePrimitive");
@@ -504,8 +499,6 @@ struct GameObject : NamedObject{
     }
 
     static Object *Instantiate(Object* original, Vector3 position, Quaternion rotation) {
-        static auto Instantiate = (Object*(*)(Object*, Vector3, Quaternion))GetExternMethod("UnityEngine.Object::Instantiate");
-        if (Instantiate) return Instantiate(original, position, rotation);
         static Method<Object*> InstantiateM = GetClass().GetMethod("Instantiate", { "original", "position", "rotation" });
         return InstantiateM(original, position, rotation);
     }
@@ -516,8 +509,6 @@ struct GameObject : NamedObject{
         return InstantiateM(original);
     }
     static Object* Instantiate(Object* original, Transform* parent, bool instantiateInWorldSpace) {
-        static auto Instantiate = (Object*(*)(Object*, Transform*, bool))GetExternMethod("UnityEngine.Object::Instantiate");
-        if (Instantiate) return Instantiate(original, parent, instantiateInWorldSpace);
         static Method<Object*> InstantiateM = GetClass().GetMethod("Instantiate", { "original", "parent", "instantiateInWorldSpace" });
         return InstantiateM(original, parent, instantiateInWorldSpace);
     }
@@ -3741,4 +3732,5 @@ struct TrailRenderer : Renderer {
             m[this](value);
         }
     }
+
 };
