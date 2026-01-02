@@ -479,13 +479,8 @@ struct GameObject : NamedObject{
         return mclass;
     }
     static void Destroy(Object* obj){
-        static auto Destroy = (void(*)(Object*))GetExternMethod("UnityEngine.Object::Destroy");
-        if (Destroy) {
-            Destroy(obj);
-        } else {
-            static Method<void> DestroyM = Class("UnityEngine", "Object").GetMethod("Destroy", 1);
-            DestroyM(obj);
-        }
+        static Method<void> DestroyM = Class("UnityEngine", "Object").GetMethod("Destroy", 1);
+        DestroyM(obj);
     }
     static void Destroy(Object* obj, float t) {
         static Method<void> DestroyM = Class("UnityEngine", "Object").GetMethod("Destroy", 2);
@@ -655,7 +650,13 @@ struct Transform : Component{
         static Class mclass = Class("UnityEngine", "Transform");
         return mclass;
     }
-
+//public Vector3 InverseTransformPoint(Vector3 position) { }
+    Vector3 InverseTransformPoint(Vector3 position) {
+        static auto InverseTransformPointe = (Vector3(*)(void*, Vector3))GetExternMethod("UnityEngine.Transform::InverseTransformPoint");
+        if (InverseTransformPointe) return InverseTransformPointe(this, position);
+        static Method<Vector3> InverseTransformPointM = GetClass().GetMethod("InverseTransformPoint");
+        return InverseTransformPointM[this](position);
+    }
     Vector3 GetPosition(){
         static auto get_position = (Vector3(*)(void*))GetExternMethod("UnityEngine.Transform::get_position");
         if (get_position) return get_position(this);
@@ -1041,6 +1042,34 @@ struct Material : NamedObject{
         static Class mclass = Class("UnityEngine", "Material");
         return mclass;
     }
+
+    void SetTexture(std::string name, Texture2D* value) {
+        static auto SetTexture = (void(*)(void*, String*, Texture2D*))GetExternMethod("UnityEngine.Material::SetTexture");
+        if (SetTexture) {
+            SetTexture(this, CreateMonoString(name), value);
+        } else {
+            static Method<void> SetTextureM = GetClass().GetMethod("SetTexture", 2);
+            SetTextureM[this](CreateMonoString(name), value);
+        }
+    }
+    void EnableKeyword(std::string name) {
+        static auto EnableKeyword = (void(*)(void*, String*))GetExternMethod("UnityEngine.Material::EnableKeyword");
+        if (EnableKeyword) {
+            EnableKeyword(this, CreateMonoString(name));
+        } else {
+            static Method<void> EnableKeywordM = GetClass().GetMethod("EnableKeyword", 1);
+            EnableKeywordM[this](CreateMonoString(name));
+        }
+    }
+    void DisableKeyword(std::string name) {
+        static auto DisableKeyword = (void(*)(void*, String*))GetExternMethod("UnityEngine.Material::DisableKeyword");
+        if (DisableKeyword) {
+            DisableKeyword(this, CreateMonoString(name));
+        } else {
+            static Method<void> DisableKeywordM = GetClass().GetMethod("DisableKeyword", 1);
+            DisableKeywordM[this](CreateMonoString(name));
+        }
+    }
     void SetFloat(std::string name, float value) {
         static auto SetFloat = (void(*)(void*, String*, float))GetExternMethod("UnityEngine.Material::SetFloat");
         if (SetFloat) {
@@ -1048,6 +1077,16 @@ struct Material : NamedObject{
         } else {
             static Method<void> SetFloatM = GetClass().GetMethod("SetFloat", 2);
             SetFloatM[this](CreateMonoString(name), value);
+        }
+    }
+
+    void SetInt(std::string name, int value) {
+        static auto SetInt = (void(*)(void*, String*, int))GetExternMethod("UnityEngine.Material::SetInt");
+        if (SetInt) {
+            SetInt(this, CreateMonoString(name), value);
+        } else {
+            static Method<void> SetIntM = GetClass().GetMethod("SetInt", 2);
+            SetIntM[this](CreateMonoString(name), value);
         }
     }
     Shader* GetShader(){
@@ -1983,6 +2022,14 @@ struct Texture2D : NamedObject {
     static Class GetClass(){
         static Class mclass = Class("UnityEngine", "Texture2D");
         return mclass;
+    }
+
+
+    static Texture2D* CreateExternalTexture(int width, int height, TextureFormat format, bool mipChain, bool linear, void* nativeTex) {
+        static auto Create = (Texture2D*(*)(int width, int height, TextureFormat format, bool mipChain, bool linear, void* nativeTex))GetExternMethod("UnityEngine.Texture2D::CreateExternalTexture");
+        if (Create) return Create(width, height, format, mipChain, linear, nativeTex);
+        static Method<Texture2D*> CreateM = GetClass().GetMethod("CreateExternalTexture", 6);
+        return CreateM(width, height, format, mipChain, linear, nativeTex);
     }
 
     static Texture2D* Create(int width, int height) {
