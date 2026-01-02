@@ -479,10 +479,17 @@ struct GameObject : NamedObject{
         return mclass;
     }
     static void Destroy(Object* obj){
-        static Method<void> DestroyM = Class("UnityEngine", "Object").GetMethod("Destroy", 1);
-        DestroyM(obj);
+        if (!obj || !obj->Alive()) return;
+        static auto Destroy = (void(*)(Object*))GetExternMethod("UnityEngine.Object::Destroy");
+        if (Destroy) {
+            Destroy(obj);
+        } else {
+            static Method<void> DestroyM = Class("UnityEngine", "Object").GetMethod("Destroy", 1);
+            DestroyM(obj);
+        }
     }
     static void Destroy(Object* obj, float t) {
+        if (!obj || !obj->Alive()) return;
         static Method<void> DestroyM = Class("UnityEngine", "Object").GetMethod("Destroy", 2);
         DestroyM(obj, t);
     }
@@ -3781,3 +3788,4 @@ struct TrailRenderer : Renderer {
     }
 
 };
+
