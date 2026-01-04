@@ -1,10 +1,22 @@
 #pragma once
+#include <type_traits>
+#include <assert>
 #include "../Utils/includes.h" // Add your bnm includes here
 
 using namespace BNM;
 using namespace Structures::Unity;
 using namespace Structures::Mono;
 using namespace UnityEngine;
+
+#define BNM_CUSTOM_DEFAULT_GETTER(CustomType)                     \
+template<>                                                   \
+BNM::Defaults::DefaultTypeRef BNM::Defaults::Get<CustomType*>() { \
+    static BNM::Defaults::Internal::ClassType classCache = nullptr; \
+    if (!classCache) {                                      \
+        classCache = CustomType::GetClass()._data;                \
+    }                                                        \
+    return BNM::Defaults::DefaultTypeRef { &classCache };   \
+}
 
 struct NamedObject;
 struct Component;
@@ -51,7 +63,6 @@ struct Light;
 struct AudioClip;
 struct AudioSource;
 struct LODGroup;
-struct Matrix4x4;
 struct Animator;
 struct MonoBehaviour;
 struct Application;
@@ -450,11 +461,21 @@ struct Component : NamedObject{
         }
     }
 
-    Component* GetComponent(MonoType* type) {
+    template <typename T = Component*>
+    requires std::is_convertible_v<T, Component*>
+    T GetComponent(MonoType* type) {
         static auto GetComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.Component::GetComponent");
-        if (GetComponent) return GetComponent(this, type);
+        if (GetComponent) return (T)GetComponent(this, type);
         static Method<Component*> GetComponentM = GetClass().GetMethod("GetComponent", 1);
-        return GetComponentM[this](type);
+        return (T)GetComponentM[this](type);
+    }
+    template <typename T = Component*>
+    requires std::is_convertible_v<T, Component*>
+    T GetComponent(Class type) {
+        static auto GetComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.Component::GetComponent");
+        if (GetComponent) return (T)GetComponent(this, type.GetMonoType());
+        static Method<Component*> GetComponentM = GetClass().GetMethod("GetComponent", 1);
+        return (T)GetComponentM[this](type.GetMonoType());
     }
     Component* GetComponentInChildren(MonoType* type, bool includeInactive) {
         static auto GetComponentInChildren = (Component*(*)(void*, MonoType*, bool))GetExternMethod("UnityEngine.Component::GetComponentInChildren");
@@ -562,17 +583,37 @@ struct GameObject : NamedObject{
         static Method<Object*> FindObjectOfTypeM = GetClass().GetMethod("FindObjectOfType", {"type"});
         return FindObjectOfTypeM(type);
     }
-    Component* GetComponent(MonoType* type){
+    template <typename T = Component*>
+    requires std::is_convertible_v<T, Component*>
+    T GetComponent(MonoType* type){
         static auto GetComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::GetComponent");
-        if (GetComponent) return GetComponent(this, type);
+        if (GetComponent) return (T)GetComponent(this, type);
         static Method<Component*> GetComponentM = GetClass().GetMethod("GetComponent", 1);
-        return GetComponentM[this](type);
+        return (T)GetComponentM[this](type);
     }
-    Component* AddComponent(MonoType* type){
+    template <typename T = Component*>
+    requires std::is_convertible_v<T, Component*>
+    T GetComponent(Class type){
+        static auto GetComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::GetComponent");
+        if (GetComponent) return (T)GetComponent(this, type.GetMonoType());
+        static Method<Component*> GetComponentM = GetClass().GetMethod("GetComponent", 1);
+        return (T)GetComponentM[this](type.GetMonoType());
+    }
+    template <typename T = Component*>
+    requires std::is_convertible_v<T, Component*>
+    T AddComponent(MonoType* type){
         static auto AddComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::AddComponent");
-        if (AddComponent) return AddComponent(this, type);
+        if (AddComponent) return (T)AddComponent(this, type);
         static Method<Component*> AddComponentM = GetClass().GetMethod("AddComponent");
-        return AddComponentM[this](type);
+        return (T)AddComponentM[this](type);
+    }
+    template <typename T = Component*>
+    requires std::is_convertible_v<T, Component*>
+    T AddComponent(Class type){
+        static auto AddComponent = (Component*(*)(void*, MonoType*))GetExternMethod("UnityEngine.GameObject::AddComponent");
+        if (AddComponent) return (T)AddComponent(this, type.GetMonoType());
+        static Method<Component*> AddComponentM = GetClass().GetMethod("AddComponent");
+        return (T)AddComponentM[this](type.GetMonoType());
     }
     Transform* GetTransform(){
         static auto get_transform = (Transform*(*)(void*))GetExternMethod("UnityEngine.GameObject::get_transform");
@@ -2359,36 +2400,6 @@ struct Animator : Behaviour {
     }
 };
 
-struct Matrix4x4 {
-    float m00, m01, m02, m03;
-    float m10, m11, m12, m13;
-    float m20, m21, m22, m23;
-    float m30, m31, m32, m33;
-
-    static MonoType* GetType(){
-        static MonoType* type = Class("UnityEngine", "Matrix4x4").GetMonoType();
-        return type;
-    }
-    static Class GetClass(){
-        static Class mclass = Class("UnityEngine", "Matrix4x4");
-        return mclass;
-    }
-
-    static Matrix4x4 identity() {
-        static auto identity = (Matrix4x4(*)())GetExternMethod("UnityEngine.Matrix4x4::get_identity");
-        if (identity) return identity();
-        static Method<Matrix4x4> identityM = GetClass().GetMethod("get_identity");
-        return identityM();
-    }
-
-    static Matrix4x4 zero() {
-        static auto zero = (Matrix4x4(*)())GetExternMethod("UnityEngine.Matrix4x4::get_zero");
-        if (zero) return zero();
-        static Method<Matrix4x4> zeroM = GetClass().GetMethod("get_zero");
-        return zeroM();
-    }
-};
-
 struct LODGroup : Component {
     static MonoType* GetType(){
         static MonoType* type = Class("UnityEngine", "LODGroup").GetMonoType();
@@ -3010,8 +3021,12 @@ struct ParticleSystem : Component {
 
     struct EmissionModule {
         static Class GetClass() {
-            static Class mclass = Class("UnityEngine", "ParticleSystem+EmissionModule");
+            static Class mclass = Class("UnityEngine", "ParticleSystem").GetInnerClass("EmissionModule");
             return mclass;
+        }
+        static MonoType* GetType() {
+            static MonoType* type = Class("UnityEngine", "ParticleSystem").GetInnerClass("EmissionModule").GetMonoType();
+            return type;
         }
 
         float GetRateOverTimeMultiplier() {
@@ -3789,3 +3804,49 @@ struct TrailRenderer : Renderer {
 
 };
 
+
+
+BNM_CUSTOM_DEFAULT_GETTER(NamedObject)
+BNM_CUSTOM_DEFAULT_GETTER(Component)
+BNM_CUSTOM_DEFAULT_GETTER(GameObject)
+BNM_CUSTOM_DEFAULT_GETTER(Transform)
+BNM_CUSTOM_DEFAULT_GETTER(Behaviour)
+BNM_CUSTOM_DEFAULT_GETTER(Canvas)
+BNM_CUSTOM_DEFAULT_GETTER(CanvasScaler)
+BNM_CUSTOM_DEFAULT_GETTER(Camera)
+BNM_CUSTOM_DEFAULT_GETTER(UIBehavior)
+BNM_CUSTOM_DEFAULT_GETTER(BaseRaycaster)
+BNM_CUSTOM_DEFAULT_GETTER(GraphicRaycaster)
+BNM_CUSTOM_DEFAULT_GETTER(Shader)
+BNM_CUSTOM_DEFAULT_GETTER(Renderer)
+BNM_CUSTOM_DEFAULT_GETTER(Material)
+BNM_CUSTOM_DEFAULT_GETTER(RectTransform)
+BNM_CUSTOM_DEFAULT_GETTER(Graphic)
+BNM_CUSTOM_DEFAULT_GETTER(MaskableGraphic)
+BNM_CUSTOM_DEFAULT_GETTER(Text)
+BNM_CUSTOM_DEFAULT_GETTER(UnityWebRequest)
+BNM_CUSTOM_DEFAULT_GETTER(Font)
+BNM_CUSTOM_DEFAULT_GETTER(LineRenderer)
+BNM_CUSTOM_DEFAULT_GETTER(Rigidbody)
+BNM_CUSTOM_DEFAULT_GETTER(Collider)
+BNM_CUSTOM_DEFAULT_GETTER(SphereCollider)
+BNM_CUSTOM_DEFAULT_GETTER(BoxCollider)
+BNM_CUSTOM_DEFAULT_GETTER(MeshRenderer)
+BNM_CUSTOM_DEFAULT_GETTER(AssetBundle)
+BNM_CUSTOM_DEFAULT_GETTER(LightmapData)
+BNM_CUSTOM_DEFAULT_GETTER(LightmapSettings)
+BNM_CUSTOM_DEFAULT_GETTER(Texture2D)
+BNM_CUSTOM_DEFAULT_GETTER(Gradient)
+BNM_CUSTOM_DEFAULT_GETTER(Skybox)
+BNM_CUSTOM_DEFAULT_GETTER(Sprite)
+BNM_CUSTOM_DEFAULT_GETTER(ParticleSystem)
+BNM_CUSTOM_DEFAULT_GETTER(Light)
+BNM_CUSTOM_DEFAULT_GETTER(AudioClip)
+BNM_CUSTOM_DEFAULT_GETTER(AudioSource)
+BNM_CUSTOM_DEFAULT_GETTER(LODGroup)
+BNM_CUSTOM_DEFAULT_GETTER(Animator)
+BNM_CUSTOM_DEFAULT_GETTER(::MonoBehaviour)
+BNM_CUSTOM_DEFAULT_GETTER(SkinnedMeshRenderer)
+BNM_CUSTOM_DEFAULT_GETTER(DownloadHandlerTexture)
+BNM_CUSTOM_DEFAULT_GETTER(TextMeshPro)
+BNM_CUSTOM_DEFAULT_GETTER(TMP_Text)
